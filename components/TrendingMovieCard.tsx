@@ -1,6 +1,8 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native'
 import React from 'react'
 import { Link } from 'expo-router';
+import { images } from '@/constants/images';
+import MaskedView from '@react-native-masked-view/masked-view';
 
 type TrendingCardProps = {  
     movie: {
@@ -27,7 +29,17 @@ const TrendingMovieCard = ({movie:{title,poster_url,movie_id},index}:TrendingCar
             />
     
             <View className="absolute bottom-9 -left-3.5 px-2 py-1 rounded-full">
-              {title}
+              <MaskedView
+                maskElement={
+                  <Text className="text-6xl font-bold text-white">{index + 1}</Text>
+                }
+              >
+                <Image
+                  source={images.highlight}
+                  className=' size-14'
+                  resizeMode='cover'
+                />
+              </MaskedView>
             </View>
     
     
