@@ -3,27 +3,35 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StatusBar, View } from "react-native";
+import { Provider } from "react-redux";
+import { store } from "@/store/store";
 import "../global.css";
 
 function RootLayoutNav() {
-  const { user, loading } = useAuth();
+   const { user, restoreUserFromToken, loading } = useAuth();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const checkFirstLaunch = async () => {
+    const initApp = async () => {
       const hasLaunched = await AsyncStorage.getItem("hasLaunched");
       if (!hasLaunched) {
         await AsyncStorage.setItem("hasLaunched", "true");
         router.replace("/screens/Welcome");
       }
+
+      // Restore user session if token exists
+      await restoreUserFromToken();
       setIsReady(true);
     };
-    checkFirstLaunch();
+
+    initApp();
   }, []);
 
   useEffect(() => {
     if (isReady && !loading) {
-      if (user) {
+      
+      if (user.id) {
+        console.log(" User is authenticated, navigating to home page");
         // User is authenticated, navigate to home page
         router.replace("/(tabs)");
       } else {
@@ -78,8 +86,10 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <RootLayoutNav />
-    </AuthProvider>
+    <Provider store={store}>
+      <AuthProvider>
+        <RootLayoutNav />
+      </AuthProvider>
+    </Provider>
   );
 }

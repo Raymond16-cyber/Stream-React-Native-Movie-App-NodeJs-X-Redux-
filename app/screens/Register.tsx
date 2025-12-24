@@ -1,5 +1,6 @@
 import { generateName } from "@/services/generatePlaceholderName";
 import { RegisterUser } from "@/services/useAuth";
+import { useDispatch } from "react-redux";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { router } from "expo-router";
 import React, { useState } from "react";
@@ -16,6 +17,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Yup from "yup";
 import { styles } from "../styles/Stylesheets/OutApp";
+import { registerAction } from "@/store/actions/authAction";
+import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 
 // Validation schema
 const schema = Yup.object({
@@ -31,6 +34,7 @@ type FormData = {
 };
 
 const Register = () => {
+  const dispatch = useAppDispatch();
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -51,9 +55,8 @@ const Register = () => {
       password: password,
       name: name,
     };
-    RegisterUser(toSend)
-      .then(() => router.push("/screens/Login"))
-      .catch((err) => console.log("unable to send register data", err));
+    dispatch(registerAction(toSend));
+    router.push("/screens/Login");
   };
 
   return (

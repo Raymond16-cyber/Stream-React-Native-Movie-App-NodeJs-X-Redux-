@@ -17,6 +17,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Yup from "yup";
 import { styles } from "../styles/Stylesheets/OutApp";
+import { loginAction } from "@/store/actions/authAction";
+import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 
 // Validation schema
 const schema = Yup.object({
@@ -32,8 +34,8 @@ type FormData = {
 };
 
 const Login = () => {
+  const dispatch = useAppDispatch();
   const [showPassword, setShowPassword] = useState(false);
-  const { refreshUser } = useAuth();
 
   const {
     control,
@@ -49,13 +51,7 @@ const Login = () => {
         email: data.email,
         password: data.password,
       };
-      const result = await loginUser(loginData);
-      if (result) {
-        console.log("login successful");
-        // Refresh user data after successful login
-        await refreshUser();
-        // Navigation will be handled automatically by the root layout
-      }
+      await dispatch(loginAction(loginData));
     } catch (error) {
       Alert.alert(
         "Login Failed",
