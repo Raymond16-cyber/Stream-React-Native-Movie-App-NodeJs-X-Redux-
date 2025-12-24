@@ -1,4 +1,5 @@
-import { Account, Avatars, Client, ID, Query, Storage, TablesDB } from "appwrite";
+import { useAuth } from "@/Contexts/AuthContext";
+import { Account, Avatars, Client, ID, Permission, Query, Realtime, Role, Storage, TablesDB,} from "appwrite";
 import Constants from "expo-constants";
 
 
@@ -6,7 +7,7 @@ import Constants from "expo-constants";
 const APPWRITE_ENDPOINT = Constants.expoConfig?.extra?.appwriteEndpoint;
 const APPWRITE_PROJECT_ID = Constants.expoConfig?.extra?.appwriteProjectId;
 export const APPWRITE_DATABASE_ID = Constants.expoConfig?.extra?.appwriteDatabaseId;
-const APPWRITE_TABLE_ID_1 = "metrics"
+export const APPWRITE_TABLE_ID_1 = "metrics"
 export const APPWRITE_TABLE_ID_2 = "savedmovies"
 
 
@@ -21,6 +22,7 @@ export const account = new Account(client);
 export const storage = new Storage(client);
 export const avatars = new Avatars(client);
 export const tablesDB = new TablesDB(client);
+export const realtime = new Realtime(client)
 
 
 export { client };
@@ -91,7 +93,7 @@ export const getTrendingMovies = async(): Promise<TrendingMovie[] | undefined>=>
   }
 }
 
-export const saveMovieInfo = async(movie:MovieDetails)=>{
+export const saveMovieInfo = async(movie:MovieDetails,userId:string)=>{
   try {
     // check if movie exists in DB first off
     const existing = await tablesDB.listRows({
@@ -108,13 +110,18 @@ export const saveMovieInfo = async(movie:MovieDetails)=>{
               tableId: APPWRITE_TABLE_ID_2,
               rowId: ID.unique(),
               data: {
+                userId,
                 movie_id: movie.id,
                 movie_title: movie.title,
                 genres: movie.genres.map((m)=> m.name),
                 poster_path: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
-                
-              }
-              })
+              },
+              permissions: [
+                Permission.read(Role.user(userId)),
+                Permission.update(Role.user(userId)),
+                Permission.delete(Role.user(userId)),
+              ]
+            })
               if(!result) return false
               console.log("Movie saved")
               return true
@@ -130,7 +137,6 @@ export const fetchSavedMovies = async(): Promise<SavedMovie[] | undefined>=>{
       databaseId: APPWRITE_DATABASE_ID!,
       tableId: APPWRITE_TABLE_ID_2,
     })
-    console.log('results for saved movies',results.rows)
     return results.rows as unknown as SavedMovie[]
   } catch (error) {
     

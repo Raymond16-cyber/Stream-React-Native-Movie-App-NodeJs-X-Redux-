@@ -1,4 +1,6 @@
 import { icons } from "@/constants/icons";
+import { useAuth } from "@/Contexts/AuthContext";
+import { useSavedMovies } from "@/hooks/useSavedMovies";
 import { fetchmovieDetails } from "@/services/api";
 import { saveMovieInfo } from "@/services/appwrite";
 import { useFetch } from "@/services/useFetch";
@@ -25,11 +27,14 @@ const MovieInfo = ({ label, value }: { label: string; value: string }) => (
 
 export default function MovieDetails() {
   const { id } = useLocalSearchParams();
+  const { user } = useAuth();
   const {
     data: movie,
     loading,
     error,
   } = useFetch(() => fetchmovieDetails(id as string));
+  const { savedMovies, refetch: fetchSaved } = useSavedMovies(user.$id);
+  console.log("savedMovies", savedMovies);
 
   const [expandText, setExpandText] = useState(false);
   const [movieSaved, setMovieSaved] = useState(false);
@@ -37,7 +42,7 @@ export default function MovieDetails() {
   const saveMovie = async (movie: MovieDetails | null) => {
     if (!movie) return;
     console.log("saving movie: ", movie.title, movie.genres[0].name);
-    const result = await saveMovieInfo(movie);
+    const result = await saveMovieInfo(movie, user.$id);
     setMovieSaved(result ?? false);
   };
 
@@ -94,13 +99,30 @@ export default function MovieDetails() {
               disabled={movieSaved}
             >
               <AntDesign
-                name={movieSaved ? "check" : "plus"}
+                name={
+                  savedMovies.some((m) => m.movie_id === movie?.id) ||
+                  movieSaved
+                    ? "check"
+                    : "plus"
+                }
                 size={24}
-                color="white"
+                color={
+                  savedMovies.some((m) => m.movie_id === movie?.id) ||
+                  movieSaved
+                    ? "green"
+                    : "white"
+                }
               />
-              <Text className=" text-white" style={{ fontSize: 8 }}>
-                {movieSaved ? "Saved" : "Save"}
-              </Text>
+              {savedMovies.some((m) => m.movie_id === movie?.id) ||
+              movieSaved ? (
+                <Text className=" text-green-700" style={{ fontSize: 8 }}>
+                  Saved
+                </Text>
+              ) : (
+                <Text className=" text-white" style={{ fontSize: 8 }}>
+                  Saved
+                </Text>
+              )}
             </Pressable>
           </View>
 

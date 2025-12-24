@@ -2,13 +2,13 @@ import MovieCard from "@/components/MovieCard";
 import TrendingMovieCard from "@/components/TrendingMovieCard";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
+import { useAuth } from "@/Contexts/AuthContext";
 import { fetchMovies } from "@/services/api";
 import { getTrendingMovies } from "@/services/appwrite";
 import { useFetch } from "@/services/useFetch";
-import { BlurView } from "expo-blur";
-import { useRouter } from "expo-router";
-// icons
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { BlurView } from "expo-blur";
+import { Redirect, useRouter } from "expo-router";
 import {
   ActivityIndicator,
   FlatList,
@@ -20,6 +20,7 @@ import {
 } from "react-native";
 
 export default function Index() {
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   const {
@@ -32,15 +33,20 @@ export default function Index() {
     data: movies,
     loading: moviesLoading,
     error: moviesError,
-  } = useFetch(() =>
-    fetchMovies({
-      query: "",
-    })
-  );
+  } = useFetch(() => fetchMovies({ query: "" }));
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-primary">
+        <ActivityIndicator size="large" color="#fff" />
+      </View>
+    );
+  }
+
+  if (!user) return <Redirect href="/screens/Login" />;
 
   return (
     <View className="flex-1 bg-primary">
-      {/* Background image */}
       <Image source={images.bg} className="absolute w-full h-full z-0" />
       <ScrollView
         className="flex-1"
@@ -48,18 +54,17 @@ export default function Index() {
         stickyHeaderIndices={[0]}
         contentContainerStyle={{ minHeight: "100%", paddingBottom: 10 }}
       >
-        {/* Sticky Transparent Header */}
+        {/* Header */}
         <BlurView
           intensity={70}
           tint="dark"
           className="flex flex-row items-center justify-between bg-transparent pt-20 pb-4 px-4 z-10"
         >
-          <View className="applogo flex flex-row items-center justify-center gap-x-2">
-          <Image source={icons.logo} className="w-14 h-12" />
-          <Text className="text-white text-2xl font-bold">Stream</Text>
+          <View className="flex flex-row items-center gap-x-2">
+            <Image source={icons.logo} className="w-14 h-12" />
+            <Text className="text-white text-2xl font-bold">Stream</Text>
           </View>
-
-          <View className=" flex-row items-center gap-x-4">
+          <View className="flex-row items-center gap-x-4">
             <TouchableOpacity onPress={() => router.push("/search")}>
               <Image source={icons.search} className="w-14 h-10" />
             </TouchableOpacity>
@@ -75,69 +80,61 @@ export default function Index() {
             </TouchableOpacity>
           </View>
         </BlurView>
-        <View className="flex-1 px-5">
-          {/* Loading */}
-          {moviesLoading ||
-            (trendingLoading && (
-              <ActivityIndicator
-                size="large"
-                color="#0000ff"
-                className="mt-10 self-center"
-              />
-            ))}
 
-          {/* Error */}
+        <View className="flex-1 px-5">
+          {(moviesLoading || trendingLoading) && (
+            <ActivityIndicator
+              size="large"
+              color="#0000ff"
+              className="mt-10 self-center"
+            />
+          )}
+
           {(moviesError || trendingError) && (
             <Text className="text-white mt-5 text-center">
               Error: {moviesError?.message || trendingError?.message}
             </Text>
           )}
 
-          {/* Movie list */}
-          {!moviesLoading && !moviesError && movies && (
-            <View className="flex-1 mt-5">
-              {/* trending Movies Header */}
-              {trendingMovies && trendingMovies.length > 0 && (
-                <View className=" mt-10 ">
-                  <Text className="text-lg font-bold text-white mb-3">
-                    Trending Searches
-                  </Text>
-                </View>
-              )}
+          {/* Trending Movies */}
+          {trendingMovies && trendingMovies.length > 0 && (
+            <View className="mt-10">
+              <Text className="text-lg font-bold text-white mb-3">
+                Trending Searches
+              </Text>
               <FlatList
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                ItemSeparatorComponent={() => <View className=" w-4" />}
-                className=" mb-4 mt-3"
+                ItemSeparatorComponent={() => <View className="w-4" />}
+                className="mb-4 mt-3"
                 data={trendingMovies}
                 renderItem={({ item, index }) => (
                   <TrendingMovieCard movie={item} index={index} />
                 )}
                 keyExtractor={(item) => item.movie_id.toString()}
               />
-
-              {/* Latest Movies Header */}
-              <Text className="text-lg font-bold text-white mt-5 mb-3">
-                Latest Movies
-              </Text>
-
-              {/* FlatList, never conditionally render a AltList */}
-              <FlatList
-                key={movies.length} // ensures FlatList remounts safely
-                data={movies}
-                renderItem={({ item }) => <MovieCard item={item} />}
-                keyExtractor={(item) => item.id.toString()}
-                numColumns={3}
-                columnWrapperStyle={{
-                  justifyContent: "flex-start",
-                  gap: 20,
-                  paddingRight: 5,
-                  marginBottom: 10,
-                }}
-                className=" mt-2 pb-32"
-                scrollEnabled={false}
-              />
             </View>
+          )}
+
+          {/* Latest Movies */}
+          <Text className="text-lg font-bold text-white mt-5 mb-3">
+            Latest Movies
+          </Text>
+          {movies && (
+            <FlatList
+              data={movies}
+              renderItem={({ item }) => <MovieCard item={item} />}
+              keyExtractor={(item) => item.id.toString()}
+              numColumns={3}
+              columnWrapperStyle={{
+                justifyContent: "flex-start",
+                gap: 20,
+                paddingRight: 5,
+                marginBottom: 10,
+              }}
+              className="mt-2 pb-32"
+              scrollEnabled={false}
+            />
           )}
         </View>
       </ScrollView>

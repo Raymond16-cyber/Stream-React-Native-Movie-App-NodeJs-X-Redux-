@@ -1,28 +1,16 @@
 import UserListCard from "@/components/UserListCard";
+import { useAuth } from "@/Contexts/AuthContext";
+import { useSavedMovies } from "@/hooks/useSavedMovies";
 import { fetchSavedMovies } from "@/services/appwrite";
 import { useFetch } from "@/services/useFetch";
-import React, { useEffect } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import React from "react";
+import { ActivityIndicator, FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const saved = () => {
-  const {
-    data: savedMovies,
-    loading,
-    error,
-    refetch,
-  } = useFetch(fetchSavedMovies);
+ const { user } = useAuth();
 
-  console.log("saved movies", savedMovies);
-  useEffect(() => {
-    refetch();
-  }, []);
+  const { savedMovies, loading, error, refetch: fetchSaved } = useSavedMovies(user.$id);
 
   return (
     <SafeAreaView className="flex flex-col flex-1 bg-primary w-full">
