@@ -1,9 +1,10 @@
 import { icons } from "@/constants/icons";
 import { useAuth } from "@/Contexts/AuthContext";
-import { editUser } from "@/services/user";
+import { editNameAction } from "@/store/actions/userAction";
+import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 import Feather from "@expo/vector-icons/Feather";
 import * as ImagePicker from "expo-image-picker";
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -15,32 +16,34 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const CustomizeProfilePage = () => {
+  const dispatch = useAppDispatch();
   const [username, setUsername] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [bio, setBio] = useState("");
 
   // user state
-  const { user, refreshUser } = useAuth();
+  const { user } = useAuth();
 
-  const pickImage = async () => {
-    // Ask for permission
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Permission is required to access photos!");
-      return;
-    }
+const pickImage = async () => {
+  // Ask for permission
+  const { status } =
+    await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      
-      aspect: [4, 3],
-      quality: 1,
-    });
+  if (status !== "granted") {
+    alert("Permission is required to access photos!");
+    return;
+  }
 
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
-  };
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images, // ✅ FIXED
+    aspect: [4, 3],
+    quality: 1,
+  });
+
+  if (!result.canceled) {
+    setImage(result.assets[0].uri);
+  }
+};
 
   //   send data to server
   const submitDetails = async () => {
@@ -48,9 +51,16 @@ const CustomizeProfilePage = () => {
       name: username,
       image: "",
     };
-    await editUser(data);
-    // Refresh user context to update UI immediately
-    await refreshUser();
+    if(username.trim().length > 0){
+      await dispatch(editNameAction({
+        name: username.trim()
+      }))
+    }
+    if(image){
+      console.log("image",image);
+      
+      // upload image logic here
+    }
   };
 
   return (

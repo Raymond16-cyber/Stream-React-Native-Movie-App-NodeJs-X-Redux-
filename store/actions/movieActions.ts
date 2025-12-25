@@ -14,7 +14,9 @@ query: string, movie: Movie
 ): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
   return async (dispatch) => {
     try {
-      const response = await axios.post(`${baseURL}/api/v1/increment-search-count`, {query,movie});
+      const response = await axios.post(`${baseURL}/api/v1/increment-search-count`, {query,movie},{
+        withCredentials:true
+      });
 
     } catch (error) {
       let errorMsg = "An unknown error occurred";
@@ -33,7 +35,9 @@ query: string, movie: Movie
 export const getTrendingMoviesAction = (): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
   return async (dispatch) => {
     try {
-      const response = await axios.get(`${baseURL}/api/v1/get-trending-movies`);
+      const response = await axios.get(`${baseURL}/api/v1/get-trending-movies`,{
+        withCredentials:true
+      });
       dispatch({
         type: FETCH_TRENDING_MOVIES,
         payload:{
@@ -63,7 +67,9 @@ export const getTrendingMoviesAction = (): ThunkAction<Promise<void>, RootState,
 export const saveMovieAction = ({movie,userId}:{movie:MovieDetails,userId:string}): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
 return async (dispatch) => {
   try {
-    const response = await axios.post(`${baseURL}/api/v1/save-movie`, {movie,userId});
+    const response = await axios.post(`${baseURL}/api/v1/save-movie`, {movie,userId},{
+      withCredentials:true
+    });
     dispatch({
       type: SAVE_MOVIE,
       payload:{
@@ -98,7 +104,9 @@ return async (dispatch) => {
 export const getSavedMoviesAction = (): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
   return async (dispatch) => {
     try {
-      const response = await axios.get(`${baseURL}/api/v1/get-saved-movies`);
+      const response = await axios.get(`${baseURL}/api/v1/get-saved-movies`,{
+        withCredentials:true
+      });
       dispatch({
         type:FETCH_SAVED_MOVIES,
         payload:{

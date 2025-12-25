@@ -1,6 +1,6 @@
 import { ThunkAction } from "redux-thunk";
 import axios, { AxiosError } from "axios";
-import { LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_FAIL, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS } from "../types/type"
+import { LOAD_USER, LOAD_USER_FAIL, LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_FAIL, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS } from "../types/type"
 import { RootState } from "../store";
 import { AnyAction } from "redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -97,6 +97,32 @@ export const LogoutAction = (): ThunkAction<Promise<void>, RootState, unknown, A
         type: LOGOUT_FAIL,
         payload: { 
           error: "Logout failed" 
+        },
+      });
+    }
+  };
+};
+
+
+export const loadUserAction = (): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
+  return async (dispatch) => {
+    try {
+      const response = await axios.get(`${baseURL}/api/auth/load-user`,{
+        withCredentials:true
+      });
+      dispatch({
+        type: LOAD_USER,
+        payload: { 
+          message: "User loaded successfully",
+          user: response.data.user, 
+        },
+      });
+    } catch (error) {
+      console.warn("Load user failed", error);
+      dispatch({
+        type: LOAD_USER_FAIL,
+        payload: { 
+          error: "Load user failed" 
         },
       });
     }
