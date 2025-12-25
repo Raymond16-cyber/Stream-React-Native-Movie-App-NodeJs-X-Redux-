@@ -3,6 +3,8 @@ import UserInfoCardContainer from "@/components/User/Settings/UserInfoCardContai
 import { icons } from "@/constants/icons";
 import { useAuth } from "@/Contexts/AuthContext";
 import { logoutUser } from "@/services/useAuth";
+import { LogoutAction } from "@/store/actions/authAction";
+import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -20,26 +22,26 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Profile = () => {
+  const dispatch = useAppDispatch();
   // theme change
   const [modeenabled, setModeEnabled] = useState(true);
   const [multiProfileEnabled, setMultiProfileEnabled] = useState(false);
-  const { user, loading, refreshUser } = useAuth();
+  const { user, loading } = useAuth();
 
   // animation for switch profile
-const slideAnim = useRef(new Animated.Value(-100)).current;
+  const slideAnim = useRef(new Animated.Value(-100)).current;
 
-useEffect(() => {
-  Animated.timing(slideAnim, {
-    toValue: multiProfileEnabled ? 0 : -100,
-    duration: 300,
-    useNativeDriver: true,
-  }).start();
-  Animated.spring(slideAnim, {
-    toValue: multiProfileEnabled ? 0 : -100,
-    useNativeDriver: true,
-  }).start();
-}, [multiProfileEnabled]);
-
+  useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: multiProfileEnabled ? 0 : -100,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+    Animated.spring(slideAnim, {
+      toValue: multiProfileEnabled ? 0 : -100,
+      useNativeDriver: true,
+    }).start();
+  }, [multiProfileEnabled]);
 
   return (
     <SafeAreaView className="flex flex-col flex-1 bg-primary px-2">
@@ -94,9 +96,7 @@ useEffect(() => {
                 <Text className=" text-white">Switch Profile</Text>
               </Animated.View>
             ) : (
-              <View className=" mt-4 py-4">
-
-              </View>
+              <View className=" mt-4 py-4"></View>
             )}
 
             {/* edit icon */}
@@ -138,8 +138,7 @@ useEffect(() => {
               borderRadius: 16,
             }}
             onPress={async () => {
-              await logoutUser();
-              await refreshUser();
+              await dispatch(LogoutAction());
             }}
           >
             <MaterialCommunityIcons name="logout" size={22} color="white" />

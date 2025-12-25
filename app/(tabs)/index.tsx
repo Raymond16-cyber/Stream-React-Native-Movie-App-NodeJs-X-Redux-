@@ -4,11 +4,15 @@ import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
 import { useAuth } from "@/Contexts/AuthContext";
 import { fetchMovies } from "@/services/api";
-import { getTrendingMovies } from "@/services/appwrite";
 import { useFetch } from "@/services/useFetch";
+import { getTrendingMoviesAction } from "@/store/actions/movieActions";
+import { useAppDispatch, useAppSelector } from "@/store/hooks/useAppDispatch";
+import { RootState } from "@/store/store";
+import { CLEAR_ERRORS } from "@/store/types/type";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { BlurView } from "expo-blur";
-import { Redirect, useRouter } from "expo-router";
+import { Redirect, useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -20,14 +24,31 @@ import {
 } from "react-native";
 
 export default function Index() {
+  const dispatch = useAppDispatch();
+  const {
+    loading: trendingLoading,
+    error: trendingError,
+    trendingMovies,
+  } = useAppSelector((state: RootState) => state.movies);
+
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  const {
-    data: trendingMovies,
-    loading: trendingLoading,
-    error: trendingError,
-  } = useFetch(getTrendingMovies);
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(getTrendingMoviesAction());
+      return;
+    }, [])
+  );
+  useEffect(() => {
+    if (trendingError) {
+      setTimeout(() => {
+        dispatch({
+          type: CLEAR_ERRORS,
+        });
+      }, 3000);
+    }
+  }, [trendingError]);
 
   const {
     data: movies,
@@ -92,7 +113,7 @@ export default function Index() {
 
           {(moviesError || trendingError) && (
             <Text className="text-white mt-5 text-center">
-              Error: {moviesError?.message || trendingError?.message}
+              Error: {moviesError?.message || trendingError}
             </Text>
           )}
 
@@ -111,7 +132,7 @@ export default function Index() {
                 renderItem={({ item, index }) => (
                   <TrendingMovieCard movie={item} index={index} />
                 )}
-                keyExtractor={(item) => item.movie_id.toString()}
+                keyExtractor={(item) => item?.movie_id.toString()}
               />
             </View>
           )}

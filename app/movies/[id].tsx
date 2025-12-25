@@ -2,8 +2,10 @@ import { icons } from "@/constants/icons";
 import { useAuth } from "@/Contexts/AuthContext";
 import { useSavedMovies } from "@/hooks/useSavedMovies";
 import { fetchmovieDetails } from "@/services/api";
-import { saveMovieInfo } from "@/services/appwrite";
 import { useFetch } from "@/services/useFetch";
+import { saveMovieAction } from "@/store/actions/movieActions";
+import { useAppDispatch, useAppSelector } from "@/store/hooks/useAppDispatch";
+import { RootState } from "@/store/store";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -26,6 +28,8 @@ const MovieInfo = ({ label, value }: { label: string; value: string }) => (
 );
 
 export default function MovieDetails() {
+  const dispatch = useAppDispatch();
+  const { savedStatus } = useAppSelector((state: RootState) => state.movies);
   const { id } = useLocalSearchParams();
   const { user } = useAuth();
   const {
@@ -33,7 +37,8 @@ export default function MovieDetails() {
     loading,
     error,
   } = useFetch(() => fetchmovieDetails(id as string));
-  const { savedMovies, refetch: fetchSaved } = useSavedMovies(user.$id);
+  const { savedMovies } = useAppSelector((state: RootState) => state.movies);
+
   console.log("savedMovies", savedMovies);
 
   const [expandText, setExpandText] = useState(false);
@@ -42,8 +47,10 @@ export default function MovieDetails() {
   const saveMovie = async (movie: MovieDetails | null) => {
     if (!movie) return;
     console.log("saving movie: ", movie.title, movie.genres[0].name);
-    const result = await saveMovieInfo(movie, user.$id);
-    setMovieSaved(result ?? false);
+    dispatch(saveMovieAction({ movie, userId: user?.id || user?._id }));
+    console.log(savedStatus);
+
+    setMovieSaved(savedStatus);
   };
 
   return (

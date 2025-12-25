@@ -3,12 +3,14 @@ import SearchBar from "@/components/SearchBar";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
 import { fetchMovies } from "@/services/api";
-import { updateSearchCount } from "@/services/appwrite";
 import { useFetch } from "@/services/useFetch";
+import { incrementCountOrSaveSearchAction } from "@/store/actions/movieActions";
+import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
 
 const search = () => {
+  const dispatch = useAppDispatch();
   const [searchQuery, setSearchQuery] = useState("");
 
   const {
@@ -38,7 +40,7 @@ const search = () => {
     if (!searchQuery.trim()) return;
 
     console.log("Tracking search for:", movie.title);
-    updateSearchCount(searchQuery, movie);
+    dispatch(incrementCountOrSaveSearchAction(searchQuery, movie));
   };
 
   return (

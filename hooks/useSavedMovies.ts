@@ -27,10 +27,7 @@ export const useSavedMovies = (userId:string) => {
   useFocusEffect(
     useCallback(() => {
       fetchSaved();
-      return () => {
-        console.log("[useSavedMovies] screen blurred → unsubscribe");
-       
-      };
+      return;
     }, [])
   );
 

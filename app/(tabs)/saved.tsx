@@ -3,15 +3,40 @@ import { useAuth } from "@/Contexts/AuthContext";
 import { useSavedMovies } from "@/hooks/useSavedMovies";
 import { fetchSavedMovies } from "@/services/appwrite";
 import { useFetch } from "@/services/useFetch";
-import React from "react";
+import { getSavedMoviesAction } from "@/store/actions/movieActions";
+import { useAppDispatch, useAppSelector } from "@/store/hooks/useAppDispatch";
+import { RootState } from "@/store/store";
+import { CLEAR_ERRORS } from "@/store/types/type";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect } from "react";
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const saved = () => {
  const { user } = useAuth();
+ const dispatch = useAppDispatch()
+ const {
+     loading,
+     error,
+     savedMovies,
+   } = useAppSelector((state: RootState) => state.movies);
+ 
+   useFocusEffect(
+      useCallback(() => {
+        dispatch(getSavedMoviesAction());
+        return;
+      }, [])
+    );
 
-  const { savedMovies, loading, error, refetch: fetchSaved } = useSavedMovies(user.$id);
-
+    useEffect(()=> {
+      if(error){
+        setTimeout(()=> {
+          dispatch({
+            type: CLEAR_ERRORS
+          })
+        },3000)
+      }
+    },[error])
   return (
     <SafeAreaView className="flex flex-col flex-1 bg-primary w-full">
       <View className=" flex-1">
@@ -30,7 +55,7 @@ const saved = () => {
         {/* error state */}
         {error && (
           <Text className="text-white mt-5 text-center">
-            Error: {error?.message}
+            Error: {error}
           </Text>
         )}
 

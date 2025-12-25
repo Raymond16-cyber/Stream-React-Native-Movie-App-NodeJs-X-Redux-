@@ -1,4 +1,4 @@
-import { LOAD_USER, LOGIN_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS } from "../types/type";
+import { LOAD_USER, LOGIN_SUCCESS, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS } from "../types/type";
 
 type AuthState = {
   user: Record<string, any>;
@@ -41,6 +41,14 @@ export const authReducer = (
         isAuthenticated: true,
         user: payload.user,
         message: payload.message,
+      }
+    case LOGOUT_SUCCESS:
+      return {
+        ...state,
+        isAuthenticated: false,
+        user: {},
+        message: payload?.message
+
       }
     case LOAD_USER:
       return {

@@ -1,10 +1,10 @@
 import { combineReducers } from "redux";
 import { authReducer } from "./authReducer";
+import { movieReducer } from "./movieReducer";
 
 const rootReducer = combineReducers({
   auth: authReducer,
-  // user: userReducer,
-  // chat: chatReducer,
+  movies:movieReducer
 });
 
 export default rootReducer;

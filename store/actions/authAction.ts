@@ -1,11 +1,11 @@
 import { ThunkAction } from "redux-thunk";
 import axios, { AxiosError } from "axios";
-import { LOGIN_FAIL, LOGIN_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS } from "../types/type"
+import { LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_FAIL, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS } from "../types/type"
 import { RootState } from "../store";
 import { AnyAction } from "redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const baseURL = "http://10.103.141.219:4000";
+export const baseURL = "http://10.103.141.219:4000";
 
 type regData = {
       email: string,
@@ -74,6 +74,30 @@ export const loginAction = (
       dispatch({
         type: LOGIN_FAIL,
         payload: { error: errorMsg },
+      });
+    }
+  };
+};
+
+
+export const LogoutAction = (): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
+  return async (dispatch) => {
+    try {
+      await AsyncStorage.removeItem("authToken");
+      dispatch({
+        type: LOGOUT_SUCCESS,
+        payload: { 
+          message: "Logout successful",
+          error: "" 
+        },
+      });
+    } catch (error) {
+      console.warn("Logout failed", error);
+      dispatch({
+        type: LOGOUT_FAIL,
+        payload: { 
+          error: "Logout failed" 
+        },
       });
     }
   };
