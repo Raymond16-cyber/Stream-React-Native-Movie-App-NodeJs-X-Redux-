@@ -15,6 +15,7 @@ type ActionProps = {
   setModeEnabled: (value: boolean) => void;
   multiProfileEnabled: boolean;
   setMultiProfileEnabled: (value: boolean) => void;
+  handleSwitchProfile: () => void;
 };
 
 type ButtonNavProps = {
@@ -25,6 +26,7 @@ type ButtonNavProps = {
   isMultiProfile?: boolean;
   enabled?: boolean;
   setEnabled?: any;
+  onToggle?: () => void;
 };
 
 const ButtonNav = ({
@@ -35,6 +37,7 @@ const ButtonNav = ({
   isMultiProfile,
   enabled,
   setEnabled,
+  onToggle,
 }: ButtonNavProps) => (
   <TouchableOpacity
     className="flex flex-row items-center justify-between"
@@ -52,10 +55,8 @@ const ButtonNav = ({
     </View>
 
     <View className=" flex flex-row items-center">
-      {isTheme ? (
-        <Switch value={enabled} onValueChange={setEnabled} />
-      ) : isMultiProfile ? (
-        <Switch value={enabled} onValueChange={setEnabled} />
+      {isTheme || isMultiProfile ? (
+        <Switch value={enabled} onValueChange={onToggle} />
       ) : (
         <Ionicons name="chevron-forward" size={24} color="white" />
       )}
@@ -68,9 +69,8 @@ const ActionContainer = ({
   setModeEnabled,
   multiProfileEnabled,
   setMultiProfileEnabled,
+  handleSwitchProfile,
 }: ActionProps) => {
-
-    
   return (
     <View className="flex flex-col">
       <View
@@ -113,7 +113,9 @@ const ActionContainer = ({
           text="Enable Multi Profiles"
           enabled={multiProfileEnabled}
           setEnabled={setMultiProfileEnabled}
+          onToggle={handleSwitchProfile}
         />
+
         <ButtonNav Icon={AntDesign} name="question-circle" text="Help Center" />
       </View>
 

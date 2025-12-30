@@ -1,9 +1,8 @@
 import { useAuth } from "@/Contexts/AuthContext";
-import { loginUser } from "@/services/useAuth";
 import { Ionicons } from "@expo/vector-icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Alert,
@@ -18,9 +17,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import * as Yup from "yup";
 import { styles } from "../styles/Stylesheets/OutApp";
 import { loginAction } from "@/store/actions/authAction";
-import { useAppDispatch } from "@/store/hooks/useAppDispatch";
+import { useAppDispatch, useAppSelector } from "@/store/hooks/useAppDispatch";
+import { CLEAR_ERRORS } from "@/store/types/type";
 
-// Validation schema
+/* -------------------- Validation -------------------- */
 const schema = Yup.object({
   email: Yup.string().email("Invalid email").required("Email is required"),
   password: Yup.string()
@@ -34,8 +34,15 @@ type FormData = {
 };
 
 const Login = () => {
+  const { error, isAuthenticated } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
+
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isLocked, setIsLocked] = useState(false); // prevents spam
+
+  const isDisabled = isLoading || isSuccess || isLocked;
 
   const {
     control,
@@ -45,21 +52,52 @@ const Login = () => {
     resolver: yupResolver(schema),
   });
 
+  /* -------------------- Submit -------------------- */
   const onSubmit = async (data: FormData) => {
+    if (isDisabled) return;
+
+    setIsLoading(true);
+    setIsLocked(true);
+
     try {
-      const loginData = {
-        email: data.email,
-        password: data.password,
-      };
-      await dispatch(loginAction(loginData));
-    } catch (error) {
-      Alert.alert(
-        "Login Failed",
-        error instanceof Error ? error.message : "An error occurred"
+      await dispatch(
+        loginAction({
+          email: data.email,
+          password: data.password,
+        })
       );
-      console.error("Login error:", error);
+    } catch {
+      // redux handles error
     }
   };
+
+  /* -------------------- Error handling -------------------- */
+  useEffect(() => {
+    if (error) {
+      setIsLoading(false);
+
+      const timer = setTimeout(() => {
+        dispatch({ type: CLEAR_ERRORS });
+        setIsLocked(false); // unlock login after error timeout
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  /* -------------------- Success handling -------------------- */
+  useEffect(() => {
+    if (isAuthenticated) {
+      setIsLoading(false);
+      setIsSuccess(true);
+
+      const timer = setTimeout(() => {
+        router.replace("/(tabs)");
+      }, 800);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated]);
 
   return (
     <SafeAreaView className="flex-1 bg-primary" style={{ paddingTop: 20 }}>
@@ -68,15 +106,16 @@ const Login = () => {
           paddingHorizontal: 28,
           justifyContent: "center",
           paddingBottom: 40,
-          display: "flex",
           gap: 22,
         }}
       >
-        {/* Title */}
         <Text style={styles.pageHeaderText}>Welcome Back</Text>
 
-        {/* Card */}
         <View className="bg-white rounded-2xl p-6 shadow-lg">
+          {error && (
+            <Text className="text-red-500 text-center mb-4">{error}</Text>
+          )}
+
           {/* Email */}
           <Controller
             control={control}
@@ -84,14 +123,16 @@ const Login = () => {
             render={({ field: { onChange, value, onBlur } }) => (
               <View className="mb-4">
                 <Text className="text-gray-700 mb-1">Email</Text>
-                <View className="flex-row items-center border border-gray-300 rounded-lg px-4 py-3">
+                <View className="border border-gray-300 rounded-lg px-4 py-3">
                   <TextInput
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
-                    placeholder="Enter Email"
+                    editable={!isDisabled}
+                    selectTextOnFocus={!isDisabled}
+                    placeholder="Enter email"
                     keyboardType="email-address"
-                    className="flex-1 text-gray-900"
+                    className="text-gray-900"
                     placeholderTextColor="#999"
                   />
                 </View>
@@ -116,18 +157,21 @@ const Login = () => {
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
-                    placeholder="Enter password"
-                    secureTextEntry={!showPassword}
+                    editable={!isDisabled}
+                    secureTextEntry={!showPassword || isDisabled}
                     className="flex-1 text-gray-900"
+                    placeholder="Enter password"
                     placeholderTextColor="#999"
                   />
-                  <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
-                  >
-                    <Text className="text-blue-500 font-medium ml-2">
-                      {showPassword ? "Hide" : "Show"}
-                    </Text>
-                  </TouchableOpacity>
+                  {!isDisabled && (
+                    <TouchableOpacity
+                      onPress={() => setShowPassword((p) => !p)}
+                    >
+                      <Text className="text-blue-500 ml-2">
+                        {showPassword ? "Hide" : "Show"}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
                 {errors.password && (
                   <Text className="text-red-500 mt-1">
@@ -140,27 +184,41 @@ const Login = () => {
 
           {/* Button */}
           <Pressable
+            disabled={isDisabled}
             onPress={handleSubmit(onSubmit)}
-            className="bg-primary py-3 rounded-lg items-center mb-4 mt-10"
+            style={{
+              opacity: isDisabled ? 0.6 : 1,
+              backgroundColor: isSuccess ? "#28a745" : "#6a5db0",
+            }}
+            className="py-3 rounded-lg items-center mt-10"
           >
-            <Text className="text-white font-bold text-lg">Login</Text>
-          </Pressable>
-
-          {/* Register link */}
-          <Pressable onPress={() => router.push("/screens/Register")}>
-            <Text className="text-center text-primary underline">
-              Don’t have an account? Register
+            <Text className="text-white font-bold text-lg">
+              {isLoading
+                ? "Loading..."
+                : isSuccess
+                ? "Success! Continue"
+                : "Login"}
             </Text>
           </Pressable>
 
-          {/* back to welcome page */}
-          <Pressable
-            onPress={() => router.push("/screens/Welcome")}
-            className="flex-row items-center mt-4 justify-center"
-          >
-            <Ionicons name="arrow-back" size={20} color="black" />
-            <Text className="text-primary ml-2 text-base">Back to Home</Text>
-          </Pressable>
+          {/* Links */}
+          {!isDisabled && (
+            <>
+              <Pressable onPress={() => router.push("/screens/Register")}>
+                <Text className="text-center text-primary underline mt-4">
+                  Don’t have an account? Register
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => router.push("/screens/Welcome")}
+                className="flex-row items-center mt-4 justify-center"
+              >
+                <Ionicons name="arrow-back" size={20} color="black" />
+                <Text className="text-primary ml-2">Back to Home</Text>
+              </Pressable>
+            </>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

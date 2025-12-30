@@ -52,6 +52,7 @@ export default {
       appwriteProjectName: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_NAME,
       appwriteEndpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT,
       appwriteDatabaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID,
+      tmdbApiKey: process.env.TMDB_API_KEY,
     },
   },
 };

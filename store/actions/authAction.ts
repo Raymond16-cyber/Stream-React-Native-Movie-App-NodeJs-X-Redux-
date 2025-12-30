@@ -1,11 +1,11 @@
 import { ThunkAction } from "redux-thunk";
 import axios, { AxiosError } from "axios";
-import { LOAD_USER, LOAD_USER_FAIL, LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_FAIL, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS } from "../types/type"
+import { LOAD_USER, LOAD_USER_FAIL, LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_FAIL, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS, SET_SECURITY_PIN, SET_SECURITY_PIN_FAIL } from "../types/type"
 import { RootState } from "../store";
 import { AnyAction } from "redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const baseURL = "http://10.103.141.219:4000";
+export const baseURL = "http://10.117.65.219:4000";
 
 type regData = {
       email: string,
@@ -60,7 +60,7 @@ export const loginAction = (
         payload: { 
           user: decodedToken,
           token: response.data.token,
-          message: response.data.message
+          message: response.data.message,
          },
       });
     } catch (error) {
@@ -110,11 +110,13 @@ export const loadUserAction = (): ThunkAction<Promise<void>, RootState, unknown,
       const response = await axios.get(`${baseURL}/api/auth/load-user`,{
         withCredentials:true
       });
+      await AsyncStorage.setItem("authToken", response.data.token);
       dispatch({
         type: LOAD_USER,
         payload: { 
           message: "User loaded successfully",
           user: response.data.user, 
+          pin: response.data.user.securityPin || "",
         },
       });
     } catch (error) {
@@ -128,3 +130,35 @@ export const loadUserAction = (): ThunkAction<Promise<void>, RootState, unknown,
     }
   };
 };
+
+export const createSecurityPinAction = (
+  pin: string
+): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
+  return async (dispatch) => {
+    try {
+      const response = await axios.post(`${baseURL}/api/auth/create-security-pin`, { securityPin:pin },{
+        withCredentials: true,
+      });
+      await AsyncStorage.setItem("authToken", response.data.token);
+      dispatch({
+        type: SET_SECURITY_PIN,
+        payload: { 
+          message: response.data.message,
+          pin
+         },
+      })
+    } catch (error) {
+      let errorMsg = "An unknown error occurred";
+      if (axios.isAxiosError(error)) {
+        errorMsg =
+          error.response?.data?.error ||
+          error.response?.data?.message ||
+          error.message;
+      }
+      dispatch({
+        type: SET_SECURITY_PIN_FAIL,
+        payload: { error: errorMsg },
+      });
+    }
+  };
+}

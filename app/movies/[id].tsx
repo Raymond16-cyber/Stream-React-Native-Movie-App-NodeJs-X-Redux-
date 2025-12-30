@@ -7,7 +7,7 @@ import { saveMovieAction } from "@/store/actions/movieActions";
 import { useAppDispatch, useAppSelector } from "@/store/hooks/useAppDispatch";
 import { RootState } from "@/store/store";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { router, useLocalSearchParams } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
   Image,
@@ -39,7 +39,6 @@ export default function MovieDetails() {
   } = useFetch(() => fetchmovieDetails(id as string));
   const { savedMovies } = useAppSelector((state: RootState) => state.movies);
 
-  console.log("savedMovies", savedMovies);
 
   const [expandText, setExpandText] = useState(false);
   const [movieSaved, setMovieSaved] = useState(false);
@@ -66,40 +65,14 @@ export default function MovieDetails() {
           />
         </View>
         <View className=" flex-col items-start justify-center mt-5 px-5">
-          <Text className=" text-white font-bold text-xl">
-            {loading
-              ? "Loading..."
-              : error
-                ? "Error loading movie."
-                : movie?.title}
-          </Text>
-          <View className=" flex-row items-center gap-x-1 mt-2">
-            <Text className=" text-light-200 text-sm">
-              {movie?.release_date?.split("-")[0]}
+          <View className=" flex-row items-center justify-between w-full">
+            <Text className=" text-white font-bold text-xl">
+              {loading
+                ? "Loading..."
+                : error
+                  ? "Error loading movie."
+                  : movie?.title}
             </Text>
-            <Text className=" text-light-200 text-sm"> • </Text>
-            <Text className=" text-light-200 text-sm">
-              {movie?.adult ? "PG-18" : "PG-13"}
-            </Text>
-            <Text className=" text-light-200 text-sm"> • </Text>
-            <Text className=" text-light-200 text-sm">
-              {movie?.runtime} mins
-            </Text>
-          </View>
-
-          {/* rating X save film */}
-          <View className="flex flex-row items-center justify-between w-full">
-            <View className=" bg-dark-100 px-2 py-1 rounded-md mt-2 flex-row items-center justify-center">
-              <Image source={icons.star} className=" size-4 w-10 h-10" />
-              <Text className=" text-light-200 text-sm">
-                {Math.round(movie?.vote_average || 0)}/10
-              </Text>
-              <Text className=" text-light-200 text-sm">
-                {" "}
-                ({movie?.vote_count} votes)
-              </Text>
-            </View>
-
             <Pressable
               className="flex flex-col items-center"
               onPress={() => saveMovie(movie)}
@@ -131,6 +104,44 @@ export default function MovieDetails() {
                 </Text>
               )}
             </Pressable>
+          </View>
+          <View className=" flex-row items-center gap-x-1 mt-2">
+            <Text className=" text-light-200 text-sm">
+              {movie?.release_date?.split("-")[0]}
+            </Text>
+            <Text className=" text-light-200 text-sm"> • </Text>
+            <Text className=" text-light-200 text-sm">
+              {movie?.adult ? "PG-18" : "PG-13"}
+            </Text>
+            <Text className=" text-light-200 text-sm"> • </Text>
+            <Text className=" text-light-200 text-sm">
+              {movie?.runtime} mins
+            </Text>
+          </View>
+
+          {/* rating X play trailer */}
+          <View className="flex flex-row items-center justify-between w-full">
+            <View className=" bg-dark-100 px-2 py-1 rounded-md mt-2 flex-row items-center justify-center">
+              <Image source={icons.star} className=" size-4 w-10 h-10" />
+              <Text className=" text-light-200 text-sm">
+                {Math.round(movie?.vote_average || 0)}/10
+              </Text>
+              <Text className=" text-light-200 text-sm">
+               
+                ({movie?.vote_count} votes)
+              </Text>
+            </View>
+
+            {movie?.id && (
+              <Link href={`/movies/${movie.id}/trailer`} asChild>
+                <TouchableOpacity className="bg-accent px-4 py-2 rounded-md mt-2 flex-row items-center justify-center">
+                  <AntDesign name="play-circle" size={16} color="white" />
+                  <Text className="text-white text-sm font-semibold ml-2">
+                    Play Trailer
+                  </Text>
+                </TouchableOpacity>
+              </Link>
+            )}
           </View>
 
           {/* movie overview */}

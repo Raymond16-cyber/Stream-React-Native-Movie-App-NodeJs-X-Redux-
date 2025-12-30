@@ -6,9 +6,10 @@ import { ActivityIndicator, StatusBar, View } from "react-native";
 import { Provider } from "react-redux";
 import { store } from "@/store/store";
 import "../global.css";
+import { PinSecurityProvider } from "@/Contexts/PinSecurityContext";
 
 function RootLayoutNav() {
-   const { user, restoreUserFromToken, loading } = useAuth();
+  const { user, restoreUserFromToken, loading, isAuthenticated } = useAuth();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -27,25 +28,16 @@ function RootLayoutNav() {
     initApp();
   }, []);
 
-  useEffect(() => {
-    if (isReady && !loading) {
-      
-      if (user.id) {
-        console.log(" User is authenticated, navigating to home page");
-        // User is authenticated, navigate to home page
-        router.replace("/(tabs)");
-      } else {
-        // No user, navigate to welcome/login
-        const navigateToAuth = async () => {
-          const hasLaunched = await AsyncStorage.getItem("hasLaunched");
-          if (hasLaunched) {
-            router.replace("/screens/Login");
-          }
-        };
-        navigateToAuth();
-      }
-    }
-  }, [user, loading, isReady]);
+useEffect(() => {
+  if (!isReady || loading) return;
+
+  if (isAuthenticated) {
+    router.replace("/(tabs)");
+  } else {
+    router.replace("/screens/Login");
+  }
+}, [isAuthenticated, loading, isReady]);
+
 
   if (!isReady || loading) {
     return (
@@ -74,9 +66,23 @@ function RootLayoutNav() {
           options={{ headerShown: false }}
         />
         <Stack.Screen name="movies/[id]" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="movies/[id]/trailer"
+          options={{ headerShown: false }}
+        />
         {/* settings */}
         <Stack.Screen
           name="settings/CustomizeProfile"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="settings/CreateProfile"
+          options={{ headerShown: false }}
+        />
+        {/* security */}
+        <Stack.Screen name="security/usePin" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="security/createPin"
           options={{ headerShown: false }}
         />
       </Stack>
@@ -88,7 +94,9 @@ export default function RootLayout() {
   return (
     <Provider store={store}>
       <AuthProvider>
-        <RootLayoutNav />
+        <PinSecurityProvider>
+          <RootLayoutNav />
+        </PinSecurityProvider>
       </AuthProvider>
     </Provider>
   );

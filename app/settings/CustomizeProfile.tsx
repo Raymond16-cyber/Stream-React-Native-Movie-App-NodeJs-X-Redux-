@@ -1,6 +1,7 @@
 import { icons } from "@/constants/icons";
 import { useAuth } from "@/Contexts/AuthContext";
-import { editNameAction } from "@/store/actions/userAction";
+import useCreateProfileImage from "@/hooks/useCreateProfileImage";
+import { editNameAction, editPictureAction } from "@/store/actions/userAction";
 import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 import Feather from "@expo/vector-icons/Feather";
 import * as ImagePicker from "expo-image-picker";
@@ -18,32 +19,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const CustomizeProfilePage = () => {
   const dispatch = useAppDispatch();
   const [username, setUsername] = useState("");
-  const [image, setImage] = useState<string | null>(null);
-  const [bio, setBio] = useState("");
 
   // user state
   const { user } = useAuth();
-
-const pickImage = async () => {
-  // Ask for permission
-  const { status } =
-    await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-  if (status !== "granted") {
-    alert("Permission is required to access photos!");
-    return;
-  }
-
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images, // ✅ FIXED
-    aspect: [4, 3],
-    quality: 1,
-  });
-
-  if (!result.canceled) {
-    setImage(result.assets[0].uri);
-  }
-};
+  
+  // image size
+  const AVATAR_SIZE = 90;
+  const { image,pickImage } = useCreateProfileImage()
 
   //   send data to server
   const submitDetails = async () => {
@@ -51,15 +33,24 @@ const pickImage = async () => {
       name: username,
       image: "",
     };
-    if(username.trim().length > 0){
-      await dispatch(editNameAction({
-        name: username.trim()
-      }))
+    if (username.trim().length > 0) {
+      await dispatch(
+        editNameAction({
+          name: username.trim(),
+        })
+      );
     }
-    if(image){
-      console.log("image",image);
-      
-      // upload image logic here
+    if (image) {
+      console.log("image", image);
+
+      const formData = new FormData();
+
+      formData.append("file", {
+        uri: image,
+        name: "profile.jpg",
+        type: "image/jpeg",
+      } as any);
+      await dispatch(editPictureAction(formData));
     }
   };
 
@@ -93,10 +84,31 @@ const pickImage = async () => {
             {image ? (
               <Image
                 source={{ uri: image }}
-                style={{ width: 90, height: 90 }}
+                style={{ width: AVATAR_SIZE, height: AVATAR_SIZE }}
               />
+            ) : user?.image ? (
+              <View
+                style={{
+                  width: AVATAR_SIZE,
+                  height: AVATAR_SIZE,
+                  borderRadius: AVATAR_SIZE / 2,
+                  overflow: "hidden", // 🔑 this is mandatory
+                }}
+              >
+                <Image
+                  source={user?.image ? { uri: user.image } : icons.person}
+                  style={{
+                    width: AVATAR_SIZE,
+                    height: AVATAR_SIZE,
+                  }}
+                  resizeMode="cover"
+                />
+              </View>
             ) : (
-              <Image source={icons.person} style={{ width: 90, height: 90 }} />
+              <Image
+                source={icons.person}
+                style={{ width: AVATAR_SIZE, height: AVATAR_SIZE }}
+              />
             )}
 
             <View className="ml-4">

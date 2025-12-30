@@ -2,18 +2,20 @@ import Constants from "expo-constants"
 
 // expo doesnt load env files on bundling so creating an app.config.js, and customizing works
 const TMDB_TOKEN = Constants.expoConfig?.extra?.movieToken;
+const TMDB_API_KEY = Constants.expoConfig?.extra?.tmdbApiKey;
 
 
 // tmdb object config
 export const TMDB_CONFIG = {
     BASE_URL:"https://api.themoviedb.org/3",
-    API_KEY: TMDB_TOKEN,
+    ACCESS_TOKEN: TMDB_TOKEN,
+    API_KEY: TMDB_API_KEY,
     headers: {
-        accept: 'application/json',
-        Authorization: `Bearer ${TMDB_TOKEN}`
+      accept: 'application/json',
+      Authorization: `Bearer ${TMDB_TOKEN}`
     }
 
-}
+  }
 
 
 export const fetchMovies = async ({ query }: { query: string }) => {
@@ -42,7 +44,7 @@ export const fetchMovies = async ({ query }: { query: string }) => {
 
 export const fetchmovieDetails = async (movie_id: string):Promise<MovieDetails> => {
   try {
-    const response = await fetch(`${TMDB_CONFIG.BASE_URL}/movie/${movie_id}?api_key=${TMDB_CONFIG.API_KEY}`, {
+    const response = await fetch(`${TMDB_CONFIG.BASE_URL}/movie/${movie_id}?api_key=${TMDB_CONFIG.ACCESS_TOKEN}`, {
       method: "GET",
       headers: TMDB_CONFIG.headers,
     });
@@ -62,3 +64,17 @@ export const fetchmovieDetails = async (movie_id: string):Promise<MovieDetails> 
   }
 }
 
+export const fetchMovieTrailer = async (movieId: string) => {
+  console.log("TMDB API KEY",TMDB_CONFIG.API_KEY);
+  const response = await fetch(
+    `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${TMDB_CONFIG.API_KEY}`,
+  );
+  
+  const data = await response.json();
+
+  const trailer = data.results.find(
+    (vid: any) => vid.site === "YouTube" && vid.type === "Trailer"
+  );
+
+  return trailer ? trailer.key : null;
+};
