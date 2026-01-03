@@ -94,15 +94,23 @@ export const editPictureAction = (
 
 // create profile action
 export const createProfileAction = (
-  profileData: { name: string; image?: string }
-): ThunkAction<Promise<Profile>, RootState, unknown, AnyAction> => {
+  profileData: FormData
+): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
   return async (dispatch) => {
     try {
+        const token = await AsyncStorage.getItem("authToken");
       const response = await axios.post(
-        `${baseURL}/api/me/create-profile`,
-        profileData,
-        { withCredentials: true }
-      );
+  `${baseURL}/api/me/create-profile`,
+  profileData,
+  {
+    withCredentials: true,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+  }
+);
+
 
       await AsyncStorage.setItem("authToken", response.data.token);
 
@@ -115,8 +123,6 @@ export const createProfileAction = (
         },
       });
 
-      // ✅ THIS NOW MATCHES THE RETURN TYPE
-      return response.data.profile;
     } catch (error) {
       let errorMsg = "An unknown error occurred";
 
@@ -138,36 +144,6 @@ export const createProfileAction = (
   };
 };
 
-
-export const editProfileImageAction = (
-  formData: any,
-  profileId: string
-): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
-  return async (dispatch) => {
-    try {
-      const token = await AsyncStorage.getItem("authToken");
-      const response = await axios.put(`${baseURL}/api/me/create-profile-image/${profileId}`, formData,{
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-      await AsyncStorage.setItem("authToken", response.data.token);
-      }catch (error) {
-      let errorMsg = "An unknown error occurred";
-        if (axios.isAxiosError(error)) {
-            errorMsg = 
-              error.response?.data?.error ||
-                error.response?.data?.message ||
-                error.message;
-        }
-        // dispatch({
-        //   type: EDIT_PICTURE_FAIL,
-        //   payload: { error: errorMsg },
-        // });
-    }
-  };
-};
 
 export const deleteProfileAction = (
   profileId: string

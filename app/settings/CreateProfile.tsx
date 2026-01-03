@@ -5,18 +5,19 @@ import {
   TouchableOpacity,
   ProgressBarAndroidBase,
   ToastAndroid,
+  Pressable,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/Contexts/AuthContext";
 import {
   createProfileAction,
   deleteProfileAction,
-  editProfileImageAction,
 } from "@/store/actions/userAction";
 import { useAppDispatch, useAppSelector } from "@/store/hooks/useAppDispatch";
 import { CreateProfileModal } from "@/components/User/Settings/CreateProfileModal";
 import { AntDesign } from "@expo/vector-icons";
 import useCreateProfileImage from "@/hooks/useCreateProfileImage";
+import { CLEAR_ERRORS, CLEAR_SUCCESS_MESSAGE } from "@/store/types/type";
 
 const SIZE = 128;
 
@@ -28,8 +29,12 @@ const Profiles = ({
   showUpdateIcons,
   setShowUpdateIcons,
   deleteProfile,
+  showSwitch,
+  setShowSwitch,
+  switchProfile
 }: any) => {
   const isEditMode = showUpdateIcons === profile?._id;
+  const isSwitchMode = showSwitch === profile?._id;
 
   return (
     <View style={{ width: "48%", alignItems: "center", padding: 20 }}>
@@ -49,9 +54,10 @@ const Profiles = ({
         {profile ? (
           <TouchableOpacity
             activeOpacity={0.9}
-            onPress={() =>
-              setShowUpdateIcons(isEditMode ? "none" : profile._id)
-            }
+            onPress={() => {
+              setShowUpdateIcons(isEditMode ? "none" : profile._id);
+              setShowSwitch(isSwitchMode ? "none" : profile._id);
+            }}
             style={{
               width: SIZE - 20,
               height: SIZE - 20,
@@ -174,10 +180,12 @@ const Profiles = ({
 const CreateProfile = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showUpdateIcons, setShowUpdateIcons] = useState("none");
+  const [showSwitch, setShowSwitch] = useState("none");
   const [name, setName] = useState("");
+  const [creatingProfile, setCreatingProfile] = useState(false);
   const dispatch = useAppDispatch();
   const { user } = useAuth();
-  const { image, pickImage } = useCreateProfileImage();
+  const { image, pickImage, setImage } = useCreateProfileImage();
   const { message, error } = useAppSelector((state) => state.auth);
 
   const MAX_PROFILES = 4;
@@ -189,27 +197,26 @@ const CreateProfile = () => {
   ];
 
   const createProfile = async () => {
+    setCreatingProfile(true);
     if (profiles.length >= MAX_PROFILES) return;
 
-    const createdProfile = await dispatch(
-      createProfileAction({ name, image: "" })
-    );
+    const formData = new FormData();
+    formData.append("name", name);
 
-    
-    if (image && createdProfile?._id) {
-      const formData = new FormData();
-
+    if (image) {
       formData.append("file", {
         uri: image,
         name: "profile.jpg",
         type: "image/jpeg",
       } as any);
-
-      await dispatch(editProfileImageAction(formData, createdProfile._id));
     }
+
+    await dispatch(createProfileAction(formData));
 
     setIsModalVisible(false);
     setName("");
+    setImage(null);
+    setCreatingProfile(false);
   };
 
   const deleteProfile = async (profileId: string) => {
@@ -217,12 +224,28 @@ const CreateProfile = () => {
     await dispatch(deleteProfileAction(profileId));
   };
 
+  const switchProfile = async () => {
+    // implement switch profile logic here
+    console.log("Switching to profile:", showUpdateIcons);
+  }
   useEffect(() => {
     if (message) {
       ToastAndroid.show(message, ToastAndroid.SHORT);
+      setTimeout(() => {
+        dispatch({ type: CLEAR_SUCCESS_MESSAGE });
+      }, 2000);
     }
     if (error) {
       ToastAndroid.show(error, ToastAndroid.SHORT);
+      setTimeout(() => {
+        dispatch({ type: CLEAR_SUCCESS_MESSAGE });
+      }, 3000);
+    }
+    if (error) {
+      ToastAndroid.show(error, ToastAndroid.SHORT);
+      setTimeout(() => {
+        dispatch({ type: CLEAR_ERRORS });
+      }, 3000);
     }
   }, [message, error]);
 
@@ -253,9 +276,39 @@ const CreateProfile = () => {
             showUpdateIcons={showUpdateIcons}
             setShowUpdateIcons={setShowUpdateIcons}
             deleteProfile={deleteProfile}
+            showSwitch={showSwitch}
+            setShowSwitch={setShowSwitch}
+            switchProfile={switchProfile}
           />
         ))}
       </View>
+      {showSwitch !== "none" && (
+        <View
+          style={{
+            position: "absolute",
+            bottom: 30, // 👈 distance from bottom (adjust as needed)
+            left: 0,
+            right: 0,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <TouchableOpacity
+            style={{
+              backgroundColor: "#1f2937",
+              paddingVertical: 14,
+              paddingHorizontal: 40,
+              borderRadius: 30,
+              elevation: 6, // Android shadow
+            }}
+          onPress={switchProfile}
+          >
+            <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>
+              Switch
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {isModalVisible && (
         <CreateProfileModal
@@ -267,6 +320,7 @@ const CreateProfile = () => {
           image={image}
           pickImage={pickImage}
           profiles={filledProfiles}
+          creatingProfile={creatingProfile}
         />
       )}
     </View>

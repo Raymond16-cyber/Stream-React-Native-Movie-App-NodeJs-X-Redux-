@@ -24,7 +24,7 @@ const useCreateProfileImage = () => {
       setImage(result.assets[0].uri);
     }
   };
-  return {image, pickImage};
+  return {image, pickImage,setImage};
 };
 
 export default useCreateProfileImage;
