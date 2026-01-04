@@ -1,7 +1,5 @@
 import UserListCard from "@/components/UserListCard";
 import { useAuth } from "@/Contexts/AuthContext";
-import { useSavedMovies } from "@/hooks/useSavedMovies";
-import { fetchSavedMovies } from "@/services/appwrite";
 import { useFetch } from "@/services/useFetch";
 import { getSavedMoviesAction } from "@/store/actions/movieActions";
 import { useAppDispatch, useAppSelector } from "@/store/hooks/useAppDispatch";
@@ -13,30 +11,28 @@ import { ActivityIndicator, FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const saved = () => {
- const { user } = useAuth();
- const dispatch = useAppDispatch()
- const {
-     loading,
-     error,
-     savedMovies,
-   } = useAppSelector((state: RootState) => state.movies);
- 
-   useFocusEffect(
-      useCallback(() => {
-        dispatch(getSavedMoviesAction());
-        return;
-      }, [])
-    );
+  const { user } = useAuth();
+  const dispatch = useAppDispatch();
+  const { loading, error, savedMovies } = useAppSelector(
+    (state: RootState) => state.movies
+  );
 
-    useEffect(()=> {
-      if(error){
-        setTimeout(()=> {
-          dispatch({
-            type: CLEAR_ERRORS
-          })
-        },3000)
-      }
-    },[error])
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(getSavedMoviesAction());
+      return;
+    }, [])
+  );
+
+  useEffect(() => {
+    if (error) {
+      setTimeout(() => {
+        dispatch({
+          type: CLEAR_ERRORS,
+        });
+      }, 3000);
+    }
+  }, [error]);
   return (
     <SafeAreaView className="flex flex-col flex-1 bg-primary w-full">
       <View className=" flex-1">
@@ -54,9 +50,7 @@ const saved = () => {
 
         {/* error state */}
         {error && (
-          <Text className="text-white mt-5 text-center">
-            Error: {error}
-          </Text>
+          <Text className="text-white mt-5 text-center">Error: {error}</Text>
         )}
 
         <FlatList
@@ -64,8 +58,18 @@ const saved = () => {
           renderItem={({ item }) => <UserListCard item={item} />}
           keyExtractor={(item) => item.movie_id.toString()}
         />
+
+        {!loading && !error && savedMovies?.length === 0 && (
+          <View className="flex-1 items-center justify-center mt-20 px-6">
+            <Text className="text-white text-xl font-semibold mb-2">
+              No saved movies yet
+            </Text>
+            <Text className="text-gray-400 text-center">
+              Movies you save will appear here so you can watch them later.
+            </Text>
+          </View>
+        )}
       </View>
-      {/* <ScrollView showsVerticalScrollIndicator={false}></ScrollView> */}
     </SafeAreaView>
   );
 };

@@ -1,16 +1,19 @@
 import { icons } from "@/constants/icons";
 import { useAuth } from "@/Contexts/AuthContext";
 import useCreateProfileImage from "@/hooks/useCreateProfileImage";
-import { editNameAction, editPictureAction } from "@/store/actions/userAction";
-import { useAppDispatch } from "@/store/hooks/useAppDispatch";
+import { editUserDetailsAction } from "@/store/actions/userAction";
+import { useAppDispatch, useAppSelector } from "@/store/hooks/useAppDispatch";
+import { CLEAR_ERRORS, CLEAR_SUCCESS_MESSAGE } from "@/store/types/type";
 import Feather from "@expo/vector-icons/Feather";
 import * as ImagePicker from "expo-image-picker";
-import React, { use, useState } from "react";
+import React, { use, useEffect, useState } from "react";
+import { set } from "react-hook-form";
 import {
   Image,
   ScrollView,
   Text,
   TextInput,
+  ToastAndroid,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -18,41 +21,49 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const CustomizeProfilePage = () => {
   const dispatch = useAppDispatch();
+  const { message, error } = useAppSelector((state) => state.auth);
   const [username, setUsername] = useState("");
+  const [isSaving, setIsSaving] = useState("null");
 
   // user state
   const { user } = useAuth();
-  
+
   // image size
   const AVATAR_SIZE = 90;
-  const { image,pickImage } = useCreateProfileImage()
+  const { image, pickImage } = useCreateProfileImage();
 
   //   send data to server
   const submitDetails = async () => {
-    const data = {
-      name: username,
-      image: "",
-    };
-    if (username.trim().length > 0) {
-      await dispatch(
-        editNameAction({
-          name: username.trim(),
-        })
-      );
-    }
+    setIsSaving("saving");
+    const formData = new FormData();
+    formData.append("name", username);
+
     if (image) {
-      console.log("image", image);
-
-      const formData = new FormData();
-
       formData.append("file", {
         uri: image,
         name: "profile.jpg",
         type: "image/jpeg",
       } as any);
-      await dispatch(editPictureAction(formData));
     }
+
+    await dispatch(editUserDetailsAction(formData));
   };
+  useEffect(() => {
+    if (message) {
+      setIsSaving("saved");
+      ToastAndroid.show(message, ToastAndroid.SHORT);
+      setTimeout(() => {
+        dispatch({ type: CLEAR_SUCCESS_MESSAGE });
+      }, 2000);
+    }
+    if (error) {
+      setIsSaving("error");
+      ToastAndroid.show(error, ToastAndroid.SHORT);
+      setTimeout(() => {
+        dispatch({ type: CLEAR_ERRORS });
+      }, 3000);
+    }
+  }, [message, error, isSaving]);
 
   return (
     <SafeAreaView className="flex-1 bg-primary">
@@ -160,8 +171,17 @@ const CustomizeProfilePage = () => {
               // purely visual for now
               activeOpacity={0.8}
               onPress={submitDetails}
+              disabled={isSaving === "saving" || isSaving === "saved"}
             >
-              <Text className="text-white font-semibold">Save Changes</Text>
+              {isSaving === "null" ? (
+                <Text className="text-white font-semibold">Save Changes</Text>
+              ) : isSaving === "saving" ? (
+                <Text className="text-white font-semibold">Saving...</Text>
+              ) : isSaving === "saved" ? (
+                <Text className="text-white font-semibold">Saved!</Text>
+              ) : (
+                <Text className="text-white font-semibold">Try Again</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>

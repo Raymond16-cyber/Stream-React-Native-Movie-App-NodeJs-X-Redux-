@@ -1,4 +1,4 @@
-import { CLEAR_ERRORS, CLEAR_SUCCESS_MESSAGE, CREATE_PROFILE_FAIL, CREATE_PROFILE_SUCCESS, DELETE_PROFILE_FAIL, DELETE_PROFILE_SUCCESS, EDIT_NAME_FAIL, EDIT_NAME_SUCCESS, EDIT_PICTURE_FAIL, EDIT_PICTURE_SUCCESS, LOAD_USER, LOAD_USER_FAIL, LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_FAIL, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS, SET_SECURITY_PIN, SET_SECURITY_PIN_FAIL } from "../types/type";
+import { CLEAR_ERRORS, CLEAR_SUCCESS_MESSAGE, CREATE_PROFILE_FAIL, CREATE_PROFILE_SUCCESS, DELETE_PROFILE_FAIL, DELETE_PROFILE_SUCCESS,  EDIT_USER_SUCCESS,  LOAD_USER, LOAD_USER_FAIL, LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_FAIL, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS, SET_CURRENT_PROFILE_FAIL, SET_CURRENT_PROFILE_SUCCESS, SET_SECURITY_PIN, SET_SECURITY_PIN_FAIL, TOGGLE_MULTI_PROFILE, TOGGLE_MULTI_PROFILE_FAIL } from "../types/type";
 
 type AuthState = {
   user: Record<string, any>;
@@ -65,7 +65,7 @@ export const authReducer = (
       return {
         ...state,
         isAuthenticated: true,
-        user: payload.user,
+        user: {...payload.user,currentProfile: payload.currentProfile},
       };
     case LOAD_USER_FAIL:
       return{
@@ -86,29 +86,31 @@ export const authReducer = (
         ...state,
         error: payload.error,
       };
-    case EDIT_NAME_SUCCESS:
-      return {
-        ...state,
-        user:{
-          ...state.user,
-          name: payload.user.name
-        }
-      };
-    case EDIT_NAME_FAIL:
+   case EDIT_USER_SUCCESS:
+    return{
+      ...state,
+      message:payload.message,
+      user:{
+        ...state.user,
+        name: payload.user.name,
+        image:payload.user.image,
+        currentProfile: payload.profile,
+        profiles: state.user.profiles.map((profile: any) =>
+          profile._id === payload.profile._id ? payload.profile : profile
+        ),
+      }
+    }
+    case TOGGLE_MULTI_PROFILE:
       return{
         ...state,
-        error:payload.error
-      }
-    case  EDIT_PICTURE_SUCCESS:
-      return {
-        ...state,
         user:{
           ...state.user,
-          image: payload.image
+          isMultiProfileEnabled: payload.isMultiProfileEnabled,
         },
+        message: payload.message,
       };
-    case EDIT_PICTURE_FAIL:
-      return {
+    case TOGGLE_MULTI_PROFILE_FAIL:
+      return{
         ...state,
         error: payload.error,
       };
@@ -140,6 +142,20 @@ export const authReducer = (
       };
       case DELETE_PROFILE_FAIL:
       return {
+        ...state,
+        error: payload.error,
+      };
+    case SET_CURRENT_PROFILE_SUCCESS:
+      return{
+        ...state,
+        user:{
+          ...state.user,
+          currentProfile: payload.currentProfile,
+        },
+        message: payload.message,
+      };
+    case SET_CURRENT_PROFILE_FAIL:
+      return{
         ...state,
         error: payload.error,
       };

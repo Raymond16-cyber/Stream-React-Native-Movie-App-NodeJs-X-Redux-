@@ -9,13 +9,15 @@ import {
 } from "@expo/vector-icons";
 import React from "react";
 import { Switch, Text, TouchableOpacity, View } from "react-native";
+import { useAppDispatch } from "@/store/hooks/useAppDispatch";
+import { toggleMultiProfileAction } from "@/store/actions/userAction";
 
 type ActionProps = {
   modeenabled: boolean;
   setModeEnabled: (value: boolean) => void;
   multiProfileEnabled: boolean;
   setMultiProfileEnabled: (value: boolean) => void;
-  handleSwitchProfile: () => void;
+  handleToggleMultiProfile: () => void;
 };
 
 type ButtonNavProps = {
@@ -25,7 +27,6 @@ type ButtonNavProps = {
   isTheme?: boolean;
   isMultiProfile?: boolean;
   enabled?: boolean;
-  setEnabled?: any;
   onToggle?: () => void;
 };
 
@@ -36,12 +37,12 @@ const ButtonNav = ({
   isTheme,
   isMultiProfile,
   enabled,
-  setEnabled,
   onToggle,
 }: ButtonNavProps) => (
   <TouchableOpacity
     className="flex flex-row items-center justify-between"
     style={{ padding: 10 }}
+    activeOpacity={0.8}
   >
     <View className="flex flex-row items-center gap-x-4">
       <Icon name={name} size={24} color="white" />
@@ -54,7 +55,7 @@ const ButtonNav = ({
       )}
     </View>
 
-    <View className=" flex flex-row items-center">
+    <View className="flex flex-row items-center">
       {isTheme || isMultiProfile ? (
         <Switch value={enabled} onValueChange={onToggle} />
       ) : (
@@ -68,18 +69,14 @@ const ActionContainer = ({
   modeenabled,
   setModeEnabled,
   multiProfileEnabled,
-  setMultiProfileEnabled,
-  handleSwitchProfile,
+  handleToggleMultiProfile
 }: ActionProps) => {
   return (
     <View className="flex flex-col">
-      <View
-        style={{
-          padding: 20,
-        }}
-        className="px-2 mt-4 flex flex-col bg-dark-100"
-      >
+      {/* Personal Info */}
+      <View className="px-2 mt-4 flex flex-col bg-dark-100" style={{ padding: 20 }}>
         <Text className="text-white mb-2 text-2xl">Personal Info</Text>
+
         <ButtonNav
           Icon={MaterialCommunityIcons}
           name="account"
@@ -98,45 +95,46 @@ const ActionContainer = ({
         />
       </View>
 
-      {/* user actions 2*/}
-      <View
-        style={{
-          padding: 20,
-        }}
-        className="px-2 mt-4 flex flex-col bg-dark-100"
-      >
+      {/* Profile */}
+      <View className="px-2 mt-4 flex flex-col bg-dark-100" style={{ padding: 20 }}>
         <Text className="text-white mb-2 text-2xl">Profile</Text>
+
         <ButtonNav
           Icon={AntDesign}
           name="deployment-unit"
           isMultiProfile
           text="Enable Multi Profiles"
           enabled={multiProfileEnabled}
-          setEnabled={setMultiProfileEnabled}
-          onToggle={handleSwitchProfile}
+          onToggle={handleToggleMultiProfile}
         />
 
-        <ButtonNav Icon={AntDesign} name="question-circle" text="Help Center" />
+        <ButtonNav
+          Icon={AntDesign}
+          name="question-circle"
+          text="Help Center"
+        />
       </View>
 
-      {/* user actions 3*/}
-      <View
-        style={{
-          padding: 20,
-        }}
-        className="px-2 mt-4 flex flex-col bg-dark-100"
-      >
+      {/* Security */}
+      <View className="px-2 mt-4 flex flex-col bg-dark-100" style={{ padding: 20 }}>
         <Text className="text-white mb-2 text-2xl">Security</Text>
+
         <ButtonNav Icon={Feather} name="shield" text="Security" />
         <ButtonNav Icon={Entypo} name="language" text="Language" />
+
         <ButtonNav
           Icon={AntDesign}
           name={modeenabled ? "moon" : "sun"}
           isTheme
           enabled={modeenabled}
-          setEnabled={setModeEnabled}
+          onToggle={() => setModeEnabled(!modeenabled)}
         />
-        <ButtonNav Icon={AntDesign} name="question-circle" text="Help Center" />
+
+        <ButtonNav
+          Icon={AntDesign}
+          name="question-circle"
+          text="Help Center"
+        />
       </View>
     </View>
   );

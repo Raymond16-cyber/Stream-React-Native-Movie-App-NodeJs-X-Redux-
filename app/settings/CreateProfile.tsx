@@ -12,6 +12,7 @@ import { useAuth } from "@/Contexts/AuthContext";
 import {
   createProfileAction,
   deleteProfileAction,
+  switchProfileAction,
 } from "@/store/actions/userAction";
 import { useAppDispatch, useAppSelector } from "@/store/hooks/useAppDispatch";
 import { CreateProfileModal } from "@/components/User/Settings/CreateProfileModal";
@@ -31,13 +32,39 @@ const Profiles = ({
   deleteProfile,
   showSwitch,
   setShowSwitch,
-  switchProfile
+  switchProfile,
 }: any) => {
   const isEditMode = showUpdateIcons === profile?._id;
   const isSwitchMode = showSwitch === profile?._id;
 
   return (
     <View style={{ width: "48%", alignItems: "center", padding: 20 }}>
+      {profile?.isMain && (
+        <View
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            backgroundColor: "#2563eb",
+            paddingHorizontal: 8,
+            paddingVertical: 3,
+            borderRadius: 12,
+            zIndex: 20,
+          }}
+        >
+          <Text
+            style={{
+              color: "white",
+              fontSize: 10,
+              fontWeight: "700",
+              letterSpacing: 0.5,
+            }}
+          >
+            MAIN
+          </Text>
+        </View>
+      )}
+
       <View
         style={{
           width: SIZE,
@@ -146,6 +173,22 @@ const Profiles = ({
                 </View>
               )}
             </View>
+            {user?.currentProfile?._id === profile._id && !isEditMode && (
+              <View
+                style={{
+                  position: "absolute",
+                  bottom: 6,
+                  right: 6,
+                  width: 18,
+                  height: 18,
+                  borderRadius: 9,
+                  backgroundColor: "#22c55e", // tailwind green-500
+                  borderWidth: 2,
+                  borderColor: "white",
+                  zIndex: 20,
+                }}
+              />
+            )}
           </TouchableOpacity>
         ) : (
           /* EMPTY SLOT */
@@ -225,21 +268,20 @@ const CreateProfile = () => {
   };
 
   const switchProfile = async () => {
-    // implement switch profile logic here
-    console.log("Switching to profile:", showUpdateIcons);
-  }
+    if (showSwitch === "none" || showSwitch === user?.currentProfile?._id) {
+      ToastAndroid.show("Profile already active", ToastAndroid.SHORT);
+      return;
+    }
+
+    await dispatch(switchProfileAction({ profileId: showSwitch }));
+  };
+
   useEffect(() => {
     if (message) {
       ToastAndroid.show(message, ToastAndroid.SHORT);
       setTimeout(() => {
         dispatch({ type: CLEAR_SUCCESS_MESSAGE });
       }, 2000);
-    }
-    if (error) {
-      ToastAndroid.show(error, ToastAndroid.SHORT);
-      setTimeout(() => {
-        dispatch({ type: CLEAR_SUCCESS_MESSAGE });
-      }, 3000);
     }
     if (error) {
       ToastAndroid.show(error, ToastAndroid.SHORT);
@@ -301,7 +343,7 @@ const CreateProfile = () => {
               borderRadius: 30,
               elevation: 6, // Android shadow
             }}
-          onPress={switchProfile}
+            onPress={switchProfile}
           >
             <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>
               Switch

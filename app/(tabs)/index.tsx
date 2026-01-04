@@ -3,7 +3,7 @@ import TrendingMovieCard from "@/components/TrendingMovieCard";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
 import { useAuth } from "@/Contexts/AuthContext";
-import { fetchMovies } from "@/services/api";
+import { fetchKidsCartoons, fetchMovies } from "@/services/api";
 import { useFetch } from "@/services/useFetch";
 import { getTrendingMoviesAction } from "@/store/actions/movieActions";
 import { useAppDispatch, useAppSelector } from "@/store/hooks/useAppDispatch";
@@ -33,12 +33,15 @@ export default function Index() {
 
   const { user, loading } = useAuth();
   const router = useRouter();
+  const isKid = user?.currentProfile?.isKid;
 
   useFocusEffect(
     useCallback(() => {
-      dispatch(getTrendingMoviesAction());
+      if (!isKid) {
+        dispatch(getTrendingMoviesAction());
+      }
       return;
-    }, [])
+    }, [isKid])
   );
   useEffect(() => {
     if (trendingError) {
@@ -49,12 +52,20 @@ export default function Index() {
       }, 3000);
     }
   }, [trendingError]);
-
+  
   const {
     data: movies,
     loading: moviesLoading,
     error: moviesError,
-  } = useFetch(() => fetchMovies({ query: "" }));
+    refetch
+  } = useFetch(() =>
+    isKid ? fetchKidsCartoons() : fetchMovies({ query: "" })
+  );
+
+  // refetch on swithching profiles between kid and adult
+  useEffect(() => {
+    refetch();
+  }, [user.currentProfile.isKid]);
 
   if (loading) {
     return (

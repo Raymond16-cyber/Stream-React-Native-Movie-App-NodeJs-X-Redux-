@@ -19,6 +19,7 @@ export const TMDB_CONFIG = {
 
 
 export const fetchMovies = async ({ query }: { query: string }) => {
+  console.log("Fetching movies with query:", query);
   const endpoint =
     query
       ? `${TMDB_CONFIG.BASE_URL}/search/movie?query=${encodeURIComponent(query)}`
@@ -38,6 +39,32 @@ export const fetchMovies = async ({ query }: { query: string }) => {
   }
 
   const data = await response.json();
+  return data.results;
+};
+
+export const fetchKidsCartoons = async () => {
+  console.log("Fetching kids cartoons...");
+
+  const endpoint = `${TMDB_CONFIG.BASE_URL}/discover/movie?` +
+    `certification_country=US&` +
+    `certification.lte=G&` +
+    `with_genres=16&` + // 🎨 Animation
+    `sort_by=popularity.desc`;
+
+  const response = await fetch(endpoint, {
+    method: "GET",
+    headers: TMDB_CONFIG.headers,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      `TMDB Error ${errorData.status_code}: ${errorData.status_message}`
+    );
+  }
+
+  const data = await response.json();
+
   return data.results;
 };
 

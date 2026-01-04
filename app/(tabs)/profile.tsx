@@ -4,14 +4,15 @@ import { icons } from "@/constants/icons";
 import { useAuth } from "@/Contexts/AuthContext";
 import { usePinSecurity } from "@/Contexts/PinSecurityContext";
 import { LogoutAction } from "@/store/actions/authAction";
+import { toggleMultiProfileAction } from "@/store/actions/userAction";
 import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
-import { Link, router } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { Link, router, useFocusEffect } from "expo-router";
+import { use, useEffect, useRef, useState } from "react";
 import { set } from "react-hook-form";
 import {
   Animated,
@@ -29,7 +30,7 @@ const Profile = () => {
 
   // theme change
   const [modeenabled, setModeEnabled] = useState(true);
-  const [multiProfileEnabled, setMultiProfileEnabled] = useState(true);
+  const [multiProfileEnabled, setMultiProfileEnabled] = useState(false);
 
   const { user, loading } = useAuth();
   const { request } = usePinSecurity();
@@ -61,16 +62,24 @@ const Profile = () => {
         console.log("PIN allowed:", allowed);
         if (allowed) {
           router.back();
-          setMultiProfileEnabled(true);
+          // setMultiProfileEnabled(true);
+          dispatch(toggleMultiProfileAction());
         }
         return;
       } else {
         router.push("/security/createPin");
       }
     }
-    setMultiProfileEnabled(false);
+    // setMultiProfileEnabled(false);
+    dispatch(toggleMultiProfileAction());
   };
-
+  useEffect(() => {
+      setMultiProfileEnabled(user.isMultiProfileEnabled);
+    
+  }, [user.isMultiProfileEnabled]);
+  useFocusEffect(() => {
+    console.log(user.isMultiProfileEnabled);
+  });
   return (
     <SafeAreaView className="flex flex-col flex-1 bg-primary px-2">
       {/* Header */}
@@ -102,7 +111,7 @@ const Profile = () => {
                 gap: 20,
               }}
             >
-              {user?.image ? (
+              {user?.currentProfile?.image ? (
                 <View
                   style={{
                     width: AVATAR_SIZE,
@@ -112,7 +121,7 @@ const Profile = () => {
                   }}
                 >
                   <Image
-                    source={user?.image ? { uri: user.image } : icons.person}
+                    source={user?.currentProfile?.image ? { uri: user?.currentProfile?.image } : icons.person}
                     style={{
                       width: AVATAR_SIZE,
                       height: AVATAR_SIZE,
@@ -129,7 +138,7 @@ const Profile = () => {
 
               <View className="flex flex-col">
                 <Text className="text-white text-xl">
-                  {user?.name || "Test Name"}
+                  {user?.currentProfile?.name || "Test Name"}
                 </Text>
                 <Text className="text-light-200">
                   {user?.email || "Test Email"}
@@ -170,7 +179,7 @@ const Profile = () => {
             setModeEnabled={setModeEnabled}
             multiProfileEnabled={multiProfileEnabled}
             setMultiProfileEnabled={setMultiProfileEnabled}
-            handleSwitchProfile={handleSwitchProfile}
+            handleToggleMultiProfile={handleSwitchProfile}
           />
 
           {/* Close Account */}

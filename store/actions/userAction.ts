@@ -3,7 +3,7 @@ import { ThunkAction } from "redux-thunk";
 import { RootState } from "../store";
 import { AnyAction } from "redux";
 import { baseURL } from "./authAction";
-import { CREATE_PROFILE_FAIL, CREATE_PROFILE_SUCCESS, DELETE_PROFILE_FAIL, DELETE_PROFILE_SUCCESS, EDIT_NAME_FAIL, EDIT_NAME_SUCCESS, EDIT_PICTURE_FAIL, EDIT_PICTURE_SUCCESS } from "../types/type";
+import { CREATE_PROFILE_FAIL, CREATE_PROFILE_SUCCESS, DELETE_PROFILE_FAIL, DELETE_PROFILE_SUCCESS, EDIT_USER_FAIL, EDIT_USER_SUCCESS, SET_CURRENT_PROFILE_FAIL, SET_CURRENT_PROFILE_SUCCESS, TOGGLE_MULTI_PROFILE } from "../types/type";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export type Profile = {
@@ -15,64 +15,38 @@ export type Profile = {
 };
 
 
-export const editNameAction = (
-  { name }: { name: string }
+// create profile action
+export const editUserDetailsAction = (
+  data: FormData
 ): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
-  
-  return async (dispatch) => {
-    
-    try {
-        const response = await axios.put(`${baseURL}/api/me/edit-name`, { name },{
-            withCredentials:true
-        });
-        await AsyncStorage.setItem("authToken", response.data.token);
-        
-        dispatch({
-        type: EDIT_NAME_SUCCESS,
-        payload: { 
-            message: response.data.message,
-            user: response.data.user
-         },
-        })
-    }catch (error) {
-      let errorMsg = "An unknown error occurred";
-        if (axios.isAxiosError(error)) {
-            errorMsg = 
-              error.response?.data?.error ||   
-                error.response?.data?.message ||
-                error.message;
-        }
-        dispatch({
-          type: EDIT_NAME_FAIL,
-          payload: { error: errorMsg },
-        });
-    }
-    };
-    };
-
-
-
-export const editPictureAction = (
-  formData:any
-): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
-  
   return async (dispatch) => {
     try {
       const token = await AsyncStorage.getItem("authToken");
-      const response = await axios.put(
-        `${baseURL}/api/me/edit-profile-picture`,
-        formData,
+
+      const response = await axios.post(
+        `${baseURL}/api/me/edit-user-details`,
+        data,
         {
+          withCredentials: true,
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         }
       );
-      await AsyncStorage.setItem("authToken", response.data.token);
+
+      // ✅ store new token
+      if (response.data.token) {
+        await AsyncStorage.setItem("authToken", response.data.token);
+      }
+
       dispatch({
-        type: EDIT_PICTURE_SUCCESS,
-        payload: { user: response.data.user , image: response.data.user.image },
+        type: EDIT_USER_SUCCESS,
+        payload: {
+          message: response.data.message,
+          user: response.data.user,
+          profile: response.data.profile,
+        },
       });
     } catch (error) {
       let errorMsg = "An unknown error occurred";
@@ -85,9 +59,31 @@ export const editPictureAction = (
       }
 
       dispatch({
-        type: EDIT_PICTURE_FAIL,
+        type: EDIT_USER_FAIL,
         payload: { error: errorMsg },
       });
+    }
+  };
+};
+
+export const toggleMultiProfileAction = (): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
+  return async (dispatch) => {
+    try {
+      const response = await axios.put(
+        `${baseURL}/api/me/toggle-multi-profile`,{
+          withCredentials:true
+        }
+      );
+      await AsyncStorage.setItem("authToken", response.data.token);
+      dispatch({
+        type: TOGGLE_MULTI_PROFILE,
+        payload: {
+          isMultiProfileEnabled: response.data.isMultiProfileEnabled,
+          message: response.data.message,
+        },
+      })
+    }catch(error){
+      console.warn("Toggle multi-profile failed", error);
     }
   };
 };
@@ -178,3 +174,35 @@ export const deleteProfileAction = (
       });
     }
   }}
+
+  export const switchProfileAction = ({
+    profileId
+  }: {profileId: string}): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => { 
+    return async (dispatch) => {
+      try {
+        const response = await axios.put(
+          `${baseURL}/api/me/switch-profile`,{profileId},{
+            withCredentials:true}
+        );
+        await AsyncStorage.setItem("authToken", response.data.token);
+        dispatch({
+          type: SET_CURRENT_PROFILE_SUCCESS,
+          payload: {
+            message: response.data.message,
+            currentProfile: response.data.currentProfile,
+          },
+        })
+      }catch(error){
+        let errorMsg = "An unknown error occurred";
+        if (axios.isAxiosError(error)) {
+          errorMsg =
+            error.response?.data?.error ||
+            error.response?.data?.message ||
+            error.message;
+        }
+        dispatch({
+          type:SET_CURRENT_PROFILE_FAIL,
+          payload: { error: errorMsg },
+        });
+      }
+    }}

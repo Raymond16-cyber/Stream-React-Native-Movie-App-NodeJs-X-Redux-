@@ -5,7 +5,7 @@ import { RootState } from "../store";
 import { AnyAction } from "redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const baseURL = "http://10.117.65.219:4000";
+export const baseURL = "http://10.144.166.219:4000";
 
 type regData = {
       email: string,
@@ -116,6 +116,7 @@ export const loadUserAction = (): ThunkAction<Promise<void>, RootState, unknown,
         payload: { 
           message: "User loaded successfully",
           user: response.data.user, 
+          currentProfile: response.data.currentProfile,
           pin: response.data.user.securityPin || "",
         },
       });
