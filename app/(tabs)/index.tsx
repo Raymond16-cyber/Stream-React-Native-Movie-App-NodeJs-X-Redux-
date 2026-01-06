@@ -105,19 +105,19 @@ export default function Index() {
     error: recommendationsError,
     refetch: refetchRecommendations,
   } = useFetch(() => fetchMovieRecommendations());
- 
+
   const randomRecommendedMovie =
     movieRecommendations &&
     movieRecommendations.length > 0 &&
     movieRecommendations[
       Math.floor(Math.random() * movieRecommendations.length)
-    ];;
-    console.log("Random Recommended Movie:", randomRecommendedMovie);
+    ];
+  console.log("Random Recommended Movie:", randomRecommendedMovie);
 
   // refetch on swithching profiles between kid and adult
   useEffect(() => {
     refetch();
-  }, [user.currentProfile.isKid]);
+  }, [user.currentProfile?.isKid]);
 
   if (loading) {
     return (
@@ -164,13 +164,23 @@ export default function Index() {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push("/profile")}
-              className="rounded-full border-2 p-1"
+  className="rounded-full border-2 border-white overflow-hidden"
+               style={{ width: 37, height: 37 }}
             >
-              <MaterialCommunityIcons
-                name="account-circle"
-                size={30}
-                color="white"
-              />
+              {user?.currentProfile?.image ? (
+                <Image
+                  source={{ uri: user.currentProfile.image }}
+                  style={{ width: "100%", height: "100%" }}
+                  className="rounded-full"
+                  resizeMode="cover"
+                />
+              ) : (
+                <MaterialCommunityIcons
+                  name="account-circle"
+                  size={34}
+                  color="white"
+                />
+              )}
             </TouchableOpacity>
           </View>
         </BlurView>
@@ -211,14 +221,16 @@ export default function Index() {
           )}
 
           {/* hero movie */}
-          
+
           {movieRecommendations && movieRecommendations.length > 0 && (
             <View className="mt-5 w-full overflow-hidden">
-            <HeroMovie
-            title={randomRecommendedMovie.title}
-              poster={`https://image.tmdb.org/t/p/w500${randomRecommendedMovie.poster_path}`}
-              onPress={() => router.push(`/movies/${randomRecommendedMovie.id}`)}
-            />
+              <HeroMovie
+                title={randomRecommendedMovie.title}
+                poster={`https://image.tmdb.org/t/p/w500${randomRecommendedMovie.poster_path}`}
+                onPress={() =>
+                  router.push(`/movies/${randomRecommendedMovie.id}`)
+                }
+              />
             </View>
           )}
 
@@ -259,7 +271,9 @@ export default function Index() {
                 renderItem={({ item, index }) => (
                   <MovieRecommendationCard item={item} index={index} />
                 )}
-                keyExtractor={(item) => item?.id?.toString() ?? Math.random().toString()}
+                keyExtractor={(item) =>
+                  item?.id?.toString() ?? Math.random().toString()
+                }
               />
             </View>
           )}

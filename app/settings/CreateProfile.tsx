@@ -3,9 +3,7 @@ import {
   Text,
   Image,
   TouchableOpacity,
-  ProgressBarAndroidBase,
   ToastAndroid,
-  Pressable,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/Contexts/AuthContext";
@@ -21,24 +19,21 @@ import useCreateProfileImage from "@/hooks/useCreateProfileImage";
 import { CLEAR_ERRORS, CLEAR_SUCCESS_MESSAGE } from "@/store/types/type";
 
 const SIZE = 128;
+const MAX_PROFILES = 4;
 
-const Profiles = ({
+// ---------- PROFILE COMPONENT ----------
+const ProfileCard = ({
   profile,
   user,
-  setIsModalVisible,
-  isModalVisible,
-  showUpdateIcons,
+  isEditMode,
+  isSwitchMode,
   setShowUpdateIcons,
-  deleteProfile,
-  showSwitch,
   setShowSwitch,
-  switchProfile,
+  deleteProfile,
 }: any) => {
-  const isEditMode = showUpdateIcons === profile?._id;
-  const isSwitchMode = showSwitch === profile?._id;
-
   return (
-    <View style={{ width: "48%", alignItems: "center", padding: 20 }}>
+    <View style={{ width: "48%", alignItems: "center", padding: 10 }}>
+      {/* MAIN TAG */}
       {profile?.isMain && (
         <View
           style={{
@@ -65,6 +60,7 @@ const Profiles = ({
         </View>
       )}
 
+      {/* PROFILE IMAGE */}
       <View
         style={{
           width: SIZE,
@@ -89,90 +85,61 @@ const Profiles = ({
               width: SIZE - 20,
               height: SIZE - 20,
               borderRadius: (SIZE - 20) / 2,
+              overflow: "hidden",
               position: "relative",
             }}
           >
-            {/* IMAGE / INITIALS */}
-            <View
-              style={{
-                width: "100%",
-                height: "100%",
-                borderRadius: (SIZE - 20) / 2,
-                overflow: "hidden",
-              }}
-            >
-              {(profile.user?.toString() === user?.id && profile.isMain) ||
-              (profile.user === user?._id && profile.isMain) ? (
-                <Image
-                  source={{ uri: user.image }}
-                  style={{ width: "100%", height: "100%" }}
-                  resizeMode="cover"
-                />
-              ) : profile.image ? (
-                <Image
-                  source={{ uri: profile.image }}
-                  style={{ width: "100%", height: "100%" }}
-                  resizeMode="cover"
-                />
-              ) : (
-                <View
-                  style={{
-                    flex: 1,
-                    backgroundColor: "#4b5563",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
+            {/* IMAGE OR INITIAL */}
+            {profile.image ? (
+              <Image
+                source={{ uri: profile.image }}
+                style={{ width: "100%", height: "100%" }}
+                resizeMode="cover"
+              />
+            ) : (
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: "#4b5563",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ color: "white", fontSize: 28 }}>
+                  {profile.name?.charAt(0)?.toUpperCase()}
+                </Text>
+              </View>
+            )}
+
+            {/* EDIT MODE OVERLAY */}
+            {isEditMode && (
+              <View
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.6)",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 30,
+                }}
+              >
+                <TouchableOpacity>
+                  <AntDesign name="edit" size={28} color="white" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => deleteProfile(profile._id)}
                 >
-                  <Text style={{ color: "white", fontSize: 28 }}>
-                    {profile.name?.charAt(0)?.toUpperCase()}
-                  </Text>
-                </View>
-              )}
+                  <AntDesign name="delete" size={28} color="red" />
+                </TouchableOpacity>
+              </View>
+            )}
 
-              {/* DARK OVERLAY */}
-              {isEditMode && (
-                <View
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: "rgba(0,0,0,0.6)",
-                  }}
-                />
-              )}
-
-              {/* CENTERED ICONS */}
-              {isEditMode && (
-                <View
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 30,
-                  }}
-                >
-                  <TouchableOpacity>
-                    <AntDesign name="edit" size={28} color="white" />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity>
-                    <AntDesign
-                      name="delete"
-                      size={28}
-                      color="red"
-                      onPress={() => deleteProfile(profile._id)}
-                    />
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
+            {/* SWITCH INDICATOR */}
             {user?.currentProfile?._id === profile._id && !isEditMode && (
               <View
                 style={{
@@ -182,7 +149,7 @@ const Profiles = ({
                   width: 18,
                   height: 18,
                   borderRadius: 9,
-                  backgroundColor: "#22c55e", // tailwind green-500
+                  backgroundColor: "#22c55e",
                   borderWidth: 2,
                   borderColor: "white",
                   zIndex: 20,
@@ -191,9 +158,8 @@ const Profiles = ({
             )}
           </TouchableOpacity>
         ) : (
-          /* EMPTY SLOT */
+          // EMPTY SLOT
           <TouchableOpacity
-            onPress={() => setIsModalVisible(!isModalVisible)}
             style={{
               width: SIZE - 20,
               height: SIZE - 20,
@@ -208,6 +174,7 @@ const Profiles = ({
         )}
       </View>
 
+      {/* PROFILE NAME */}
       {profile?.name && (
         <Text
           style={{ color: "white", marginTop: 8, fontSize: 16 }}
@@ -220,32 +187,32 @@ const Profiles = ({
   );
 };
 
+// ---------- CREATE PROFILE PAGE ----------
 const CreateProfile = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showUpdateIcons, setShowUpdateIcons] = useState("none");
   const [showSwitch, setShowSwitch] = useState("none");
   const [name, setName] = useState("");
   const [creatingProfile, setCreatingProfile] = useState(false);
+
   const dispatch = useAppDispatch();
   const { user } = useAuth();
   const { image, pickImage, setImage } = useCreateProfileImage();
   const { message, error } = useAppSelector((state) => state.auth);
 
-  const MAX_PROFILES = 4;
   const profiles = user?.profiles ?? [];
-
   const filledProfiles = [
     ...profiles,
     ...Array(MAX_PROFILES - profiles.length).fill(null),
   ];
 
   const createProfile = async () => {
-    setCreatingProfile(true);
     if (profiles.length >= MAX_PROFILES) return;
+
+    setCreatingProfile(true);
 
     const formData = new FormData();
     formData.append("name", name);
-
     if (image) {
       formData.append("file", {
         uri: image,
@@ -279,15 +246,11 @@ const CreateProfile = () => {
   useEffect(() => {
     if (message) {
       ToastAndroid.show(message, ToastAndroid.SHORT);
-      setTimeout(() => {
-        dispatch({ type: CLEAR_SUCCESS_MESSAGE });
-      }, 2000);
+      setTimeout(() => dispatch({ type: CLEAR_SUCCESS_MESSAGE }), 2000);
     }
     if (error) {
       ToastAndroid.show(error, ToastAndroid.SHORT);
-      setTimeout(() => {
-        dispatch({ type: CLEAR_ERRORS });
-      }, 3000);
+      setTimeout(() => dispatch({ type: CLEAR_ERRORS }), 3000);
     }
   }, [message, error]);
 
@@ -297,7 +260,7 @@ const CreateProfile = () => {
         flex: 1,
         backgroundColor: "#0f0d23",
         justifyContent: "center",
-        paddingHorizontal: 30,
+        paddingHorizontal: 20,
       }}
     >
       <View
@@ -309,26 +272,25 @@ const CreateProfile = () => {
         }}
       >
         {filledProfiles.map((profile: any, index: number) => (
-          <Profiles
-            key={index}
+          <ProfileCard
+            key={profile?._id || `empty-${index}`} // ✅ proper key
             profile={profile}
             user={user}
-            setIsModalVisible={setIsModalVisible}
-            isModalVisible={isModalVisible}
-            showUpdateIcons={showUpdateIcons}
+            isEditMode={showUpdateIcons === profile?._id}
+            isSwitchMode={showSwitch === profile?._id}
             setShowUpdateIcons={setShowUpdateIcons}
-            deleteProfile={deleteProfile}
-            showSwitch={showSwitch}
             setShowSwitch={setShowSwitch}
-            switchProfile={switchProfile}
+            deleteProfile={deleteProfile}
           />
         ))}
       </View>
+
+      {/* SWITCH BUTTON */}
       {showSwitch !== "none" && (
         <View
           style={{
             position: "absolute",
-            bottom: 30, // 👈 distance from bottom (adjust as needed)
+            bottom: 30,
             left: 0,
             right: 0,
             alignItems: "center",
@@ -341,7 +303,7 @@ const CreateProfile = () => {
               paddingVertical: 14,
               paddingHorizontal: 40,
               borderRadius: 30,
-              elevation: 6, // Android shadow
+              elevation: 6,
             }}
             onPress={switchProfile}
           >
@@ -352,6 +314,7 @@ const CreateProfile = () => {
         </View>
       )}
 
+      {/* CREATE PROFILE MODAL */}
       {isModalVisible && (
         <CreateProfileModal
           visible={isModalVisible}

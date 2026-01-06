@@ -30,7 +30,7 @@ const CustomizeProfilePage = () => {
 
   // image size
   const AVATAR_SIZE = 90;
-  const { image, pickImage } = useCreateProfileImage();
+  const { image, pickImage,setImage } = useCreateProfileImage();
 
   //   send data to server
   const submitDetails = async () => {
@@ -50,6 +50,7 @@ const CustomizeProfilePage = () => {
   };
   useEffect(() => {
     if (message) {
+      setImage(null);
       setIsSaving("saved");
       ToastAndroid.show(message, ToastAndroid.SHORT);
       setTimeout(() => {
@@ -97,7 +98,7 @@ const CustomizeProfilePage = () => {
                 source={{ uri: image }}
                 style={{ width: AVATAR_SIZE, height: AVATAR_SIZE }}
               />
-            ) : user?.image ? (
+            ) : user?.currentProfile?.image ? (
               <View
                 style={{
                   width: AVATAR_SIZE,
@@ -107,7 +108,7 @@ const CustomizeProfilePage = () => {
                 }}
               >
                 <Image
-                  source={user?.image ? { uri: user.image } : icons.person}
+                  source={user?.currentProfile?.image ? { uri: user.currentProfile.image } : icons.person}
                   style={{
                     width: AVATAR_SIZE,
                     height: AVATAR_SIZE,
