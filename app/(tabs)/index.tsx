@@ -1,9 +1,15 @@
+import HeroMovie from "@/components/HeroMovie";
 import MovieCard from "@/components/MovieCard";
+import MovieRecommendationCard from "@/components/MovieRecommendation";
 import TrendingMovieCard from "@/components/TrendingMovieCard";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
 import { useAuth } from "@/Contexts/AuthContext";
-import { fetchKidsCartoons, fetchMovies } from "@/services/api";
+import {
+  fetchKidsCartoons,
+  fetchMovieRecommendations,
+  fetchMovies,
+} from "@/services/api";
 import { useFetch } from "@/services/useFetch";
 import { getTrendingMoviesAction } from "@/store/actions/movieActions";
 import { useAppDispatch, useAppSelector } from "@/store/hooks/useAppDispatch";
@@ -92,6 +98,21 @@ export default function Index() {
           id: selectedMovieId ? selectedMovieId : undefined,
         })
   );
+  // fetchimg movie recommendations
+  const {
+    data: movieRecommendations,
+    loading: recommendationsLoading,
+    error: recommendationsError,
+    refetch: refetchRecommendations,
+  } = useFetch(() => fetchMovieRecommendations());
+ 
+  const randomRecommendedMovie =
+    movieRecommendations &&
+    movieRecommendations.length > 0 &&
+    movieRecommendations[
+      Math.floor(Math.random() * movieRecommendations.length)
+    ];;
+    console.log("Random Recommended Movie:", randomRecommendedMovie);
 
   // refetch on swithching profiles between kid and adult
   useEffect(() => {
@@ -189,6 +210,18 @@ export default function Index() {
             </Text>
           )}
 
+          {/* hero movie */}
+          
+          {movieRecommendations && movieRecommendations.length > 0 && (
+            <View className="mt-5 w-full overflow-hidden">
+            <HeroMovie
+            title={randomRecommendedMovie.title}
+              poster={`https://image.tmdb.org/t/p/w500${randomRecommendedMovie.poster_path}`}
+              onPress={() => router.push(`/movies/${randomRecommendedMovie.id}`)}
+            />
+            </View>
+          )}
+
           {/* Trending Movies */}
           {trendingMovies && trendingMovies.length > 0 && (
             <View className="mt-10">
@@ -210,8 +243,28 @@ export default function Index() {
             </View>
           )}
 
-          {/* Latest Movies / filtered movies*/}
+          {/* Recommendations */}
+          {movieRecommendations && movieRecommendations.length > 0 && (
+            <View className="mt-5">
+              <Text className="text-lg font-bold text-white mb-3">
+                Recommended For You
+              </Text>
 
+              <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                ItemSeparatorComponent={() => <View className="w-4" />}
+                className="mb-4 mt-3"
+                data={movieRecommendations}
+                renderItem={({ item, index }) => (
+                  <MovieRecommendationCard item={item} index={index} />
+                )}
+                keyExtractor={(item) => item?.id?.toString() ?? Math.random().toString()}
+              />
+            </View>
+          )}
+
+          {/* Latest Movies / filtered movies*/}
           {selectedMovieId ? (
             <Text className="text-lg font-bold text-white mt-5 mb-3">
               Showing results for {selectedMovieGenre} movies

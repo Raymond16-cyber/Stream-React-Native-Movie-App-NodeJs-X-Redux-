@@ -25,7 +25,6 @@ export const fetchMovies = async ({
   query?: string;
   id?: number;
 }) => {
-  console.log("Fetching movies:", { query, id });
 
   let endpoint = "";
 
@@ -43,6 +42,7 @@ export const fetchMovies = async ({
     method: "GET",
     headers: TMDB_CONFIG.headers,
   });
+  
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -52,12 +52,41 @@ export const fetchMovies = async ({
   }
 
   const data = await response.json();
-  return data.results;
+  const movies = data.results.slice(0, 18);
+  console.log("Fetched movies:", movies.length);
+  return  movies;
+
+ 
+};
+
+export const fetchMovieRecommendations = async () => {
+
+  let endpoint = "";
+    endpoint = `${TMDB_CONFIG.BASE_URL}/movie/upcoming`;
+  
+
+  const response = await fetch(endpoint, {
+    method: "GET",
+    headers: TMDB_CONFIG.headers,
+  });
+  
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      `TMDB Error ${errorData.status_code}: ${errorData.status_message}`
+    );
+  }
+  const data = await response.json();
+  const movies = data.results.slice(0, 18);
+  console.log("Fetched recommendations:", movies.length);
+  return  movies;
+
+ 
 };
 
 
 export const fetchKidsCartoons = async () => {
-  console.log("Fetching kids cartoons...");
 
   const endpoint = `${TMDB_CONFIG.BASE_URL}/discover/movie?` +
     `certification_country=US&` +
