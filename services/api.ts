@@ -18,19 +18,32 @@ export const TMDB_CONFIG = {
   }
 
 
-export const fetchMovies = async ({ query }: { query: string }) => {
-  console.log("Fetching movies with query:", query);
-  const endpoint =
-    query
-      ? `${TMDB_CONFIG.BASE_URL}/search/movie?query=${encodeURIComponent(query)}`
-      : `${TMDB_CONFIG.BASE_URL}/discover/movie?sort_by=popularity.desc`;
+export const fetchMovies = async ({
+  query,
+  id,
+}: {
+  query?: string;
+  id?: number;
+}) => {
+  console.log("Fetching movies:", { query, id });
+
+  let endpoint = "";
+
+  if (query && query.trim().length > 0) {
+    endpoint = `${TMDB_CONFIG.BASE_URL}/search/movie?query=${encodeURIComponent(query)}`;
+  } 
+  else if (id !== undefined) {
+    endpoint = `${TMDB_CONFIG.BASE_URL}/discover/movie?sort_by=popularity.desc&with_genres=${id}`;
+  } 
+  else {
+    endpoint = `${TMDB_CONFIG.BASE_URL}/discover/movie?sort_by=popularity.desc`;
+  }
 
   const response = await fetch(endpoint, {
     method: "GET",
     headers: TMDB_CONFIG.headers,
   });
 
-  // If TMDB sends an error, parse the JSON body FIRST
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(
@@ -41,6 +54,7 @@ export const fetchMovies = async ({ query }: { query: string }) => {
   const data = await response.json();
   return data.results;
 };
+
 
 export const fetchKidsCartoons = async () => {
   console.log("Fetching kids cartoons...");

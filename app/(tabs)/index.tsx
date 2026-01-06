@@ -12,10 +12,11 @@ import { CLEAR_ERRORS } from "@/store/types/type";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { BlurView } from "expo-blur";
 import { Redirect, useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  FlatListComponent,
   Image,
   ScrollView,
   Text,
@@ -24,7 +25,32 @@ import {
 } from "react-native";
 
 export default function Index() {
+  const movieGenres = [
+    { id: 28, name: "Action" },
+    { id: 12, name: "Adventure" },
+    { id: 16, name: "Animation" },
+    { id: 35, name: "Comedy" },
+    { id: 80, name: "Crime" },
+    { id: 99, name: "Documentary" },
+    { id: 18, name: "Drama" },
+    { id: 10751, name: "Family" },
+    { id: 14, name: "Fantasy" },
+    { id: 36, name: "History" },
+    { id: 27, name: "Horror" },
+    { id: 10402, name: "Music" },
+    { id: 9648, name: "Mystery" },
+    { id: 10749, name: "Romance" },
+    { id: 878, name: "Science Fiction" },
+    { id: 10770, name: "TV Movie" },
+    { id: 53, name: "Thriller" },
+    { id: 10752, name: "War" },
+    { id: 37, name: "Western" },
+  ];
   const dispatch = useAppDispatch();
+  const [selectedMovieGenre, setSelectedMovieGenre] = useState<string | null>(
+    null
+  );
+  const [selectedMovieId, setSelectedMovieId] = useState<number | null>(null);
   const {
     loading: trendingLoading,
     error: trendingError,
@@ -52,14 +78,19 @@ export default function Index() {
       }, 3000);
     }
   }, [trendingError]);
-  
+
   const {
     data: movies,
     loading: moviesLoading,
     error: moviesError,
-    refetch
+    refetch,
   } = useFetch(() =>
-    isKid ? fetchKidsCartoons() : fetchMovies({ query: "" })
+    isKid
+      ? fetchKidsCartoons()
+      : fetchMovies({
+          query: "",
+          id: selectedMovieId ? selectedMovieId : undefined,
+        })
   );
 
   // refetch on swithching profiles between kid and adult
@@ -76,6 +107,16 @@ export default function Index() {
   }
 
   if (!user) return <Redirect href="/screens/Login" />;
+
+  const selectMovieGenre = (name: string, id: number) => {
+    setSelectedMovieGenre(name);
+    setSelectedMovieId(id);
+  };
+  useEffect(() => {
+    if (selectedMovieId !== null) {
+      refetch();
+    }
+  }, [selectedMovieId]);
 
   return (
     <View className="flex-1 bg-primary">
@@ -113,6 +154,26 @@ export default function Index() {
           </View>
         </BlurView>
 
+        {/* filter movies by genres */}
+        <View className="flex-row items-center justify-end px-5 mt-4 gap-x-3">
+          <FlatList
+            data={movieGenres}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={{ marginRight: 10 }}
+                onPress={() => selectMovieGenre(item.name, item.id)}
+              >
+                <Text className="text-white bg-gray-800 px-3 py-1 rounded-full">
+                  {item.name}
+                </Text>
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item.id.toString()}
+            showsHorizontalScrollIndicator={false}
+            horizontal
+          />
+        </View>
+
         <View className="flex-1 px-5">
           {(moviesLoading || trendingLoading) && (
             <ActivityIndicator
@@ -134,6 +195,7 @@ export default function Index() {
               <Text className="text-lg font-bold text-white mb-3">
                 Trending Searches
               </Text>
+
               <FlatList
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -148,10 +210,17 @@ export default function Index() {
             </View>
           )}
 
-          {/* Latest Movies */}
-          <Text className="text-lg font-bold text-white mt-5 mb-3">
-            Latest Movies
-          </Text>
+          {/* Latest Movies / filtered movies*/}
+
+          {selectedMovieId ? (
+            <Text className="text-lg font-bold text-white mt-5 mb-3">
+              Showing results for {selectedMovieGenre} movies
+            </Text>
+          ) : (
+            <Text className="text-lg font-bold text-white mt-5 mb-3">
+              Latest Movies
+            </Text>
+          )}
           {movies && (
             <FlatList
               data={movies}
