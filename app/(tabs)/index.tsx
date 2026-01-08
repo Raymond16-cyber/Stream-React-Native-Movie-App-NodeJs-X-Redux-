@@ -28,6 +28,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  RefreshControl,
 } from "react-native";
 
 export default function Index() {
@@ -57,6 +58,9 @@ export default function Index() {
     null
   );
   const [selectedMovieId, setSelectedMovieId] = useState<number | null>(null);
+  const [randomRecommendedMovie, setRandomRecommendedMovie] =
+    useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const {
     loading: trendingLoading,
     error: trendingError,
@@ -106,13 +110,31 @@ export default function Index() {
     refetch: refetchRecommendations,
   } = useFetch(() => fetchMovieRecommendations());
 
-  const randomRecommendedMovie =
-    movieRecommendations &&
-    movieRecommendations.length > 0 &&
-    movieRecommendations[
-      Math.floor(Math.random() * movieRecommendations.length)
-    ];
-  console.log("Random Recommended Movie:", randomRecommendedMovie);
+  useEffect(() => {
+    const pickRandomMovie = () => {
+      if (movieRecommendations && movieRecommendations.length > 0) {
+        const randomMovie =
+          movieRecommendations[
+            Math.floor(Math.random() * movieRecommendations.length)
+          ];
+        setRandomRecommendedMovie(randomMovie);
+        console.log("Random Recommended Movie:", randomMovie);
+      }
+    };
+
+    // Pick one immediately
+    pickRandomMovie();
+
+    // Set interval to change every 20 minutes (20 * 60 * 1000 ms)
+    const interval = setInterval(
+      () => {
+        pickRandomMovie();
+      },
+      20 * 60 * 1000
+    );
+
+    return () => clearInterval(interval); // cleanup on unmount
+  }, [movieRecommendations]);
 
   // refetch on swithching profiles between kid and adult
   useEffect(() => {
@@ -128,6 +150,23 @@ export default function Index() {
   }
 
   if (!user) return <Redirect href="/screens/Login" />;
+
+  // onfresh handler
+  const onRefresh = async () => {
+    setRefreshing(true);
+
+    try {
+      await refetch(); // Refetch movies
+      await refetchRecommendations(); // Refetch recommendations
+      if (!isKid) {
+        dispatch(getTrendingMoviesAction()); // Refetch trending if adult profile
+      }
+    } catch (error) {
+      console.log("Refresh error:", error);
+    }
+
+    setRefreshing(false);
+  };
 
   const selectMovieGenre = (name: string, id: number) => {
     setSelectedMovieGenre(name);
@@ -147,6 +186,14 @@ export default function Index() {
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={[0]}
         contentContainerStyle={{ minHeight: "100%", paddingBottom: 10 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#030014" // spinner color
+            colors={["#030014"]} // Android
+          />
+        }
       >
         {/* Header */}
         <BlurView
@@ -164,8 +211,8 @@ export default function Index() {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push("/profile")}
-  className="rounded-full border-2 border-white overflow-hidden"
-               style={{ width: 37, height: 37 }}
+              className="rounded-full border-2 border-white overflow-hidden"
+              style={{ width: 37, height: 37 }}
             >
               {user?.currentProfile?.image ? (
                 <Image
@@ -222,7 +269,7 @@ export default function Index() {
 
           {/* hero movie */}
 
-          {movieRecommendations && movieRecommendations.length > 0 && (
+          {randomRecommendedMovie && (
             <View className="mt-5 w-full overflow-hidden">
               <HeroMovie
                 title={randomRecommendedMovie.title}
