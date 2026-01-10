@@ -1,4 +1,4 @@
-import { CLEAR_ERRORS, CLEAR_SUCCESS_MESSAGE, CREATE_PROFILE_FAIL, CREATE_PROFILE_SUCCESS, DELETE_PROFILE_FAIL, DELETE_PROFILE_SUCCESS,  EDIT_USER_SUCCESS,  LOAD_USER, LOAD_USER_FAIL, LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_FAIL, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS, SET_CURRENT_PROFILE_FAIL, SET_CURRENT_PROFILE_SUCCESS, SET_SECURITY_PIN, SET_SECURITY_PIN_FAIL, TOGGLE_MULTI_PROFILE, TOGGLE_MULTI_PROFILE_FAIL } from "../types/type";
+import { AUTH_DESTROY_ACCOUNT, AUTH_DESTROY_ACCOUNT_FAIL, CLEAR_ERRORS, CLEAR_SUCCESS_MESSAGE, CREATE_PROFILE_FAIL, CREATE_PROFILE_SUCCESS, DELETE_PROFILE_FAIL, DELETE_PROFILE_SUCCESS,  EDIT_USER_SUCCESS,  LOAD_USER, LOAD_USER_FAIL, LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_FAIL, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS, SET_CURRENT_PROFILE_FAIL, SET_CURRENT_PROFILE_SUCCESS, SET_SECURITY_PIN, SET_SECURITY_PIN_FAIL, TOGGLE_MULTI_PROFILE, TOGGLE_MULTI_PROFILE_FAIL } from "../types/type";
 
 type AuthState = {
   user: Record<string, any>;
@@ -53,6 +53,8 @@ export const authReducer = (
         ...state,
         isAuthenticated: false,
         user: {},
+        error: "",
+        loading: false,
         message: payload?.message
 
       }
@@ -72,6 +74,18 @@ export const authReducer = (
         ...state,
         error:payload.error
       }
+    case AUTH_DESTROY_ACCOUNT:
+      return {
+        ...state,
+        isAuthenticated: false,
+        user: {},
+        message: payload.message,
+      };
+    case AUTH_DESTROY_ACCOUNT_FAIL:
+      return {
+        ...state,
+        error: payload.error,
+      };
     case SET_SECURITY_PIN:
       return {
         ...state,

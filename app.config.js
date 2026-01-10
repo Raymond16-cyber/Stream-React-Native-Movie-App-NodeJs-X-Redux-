@@ -8,6 +8,7 @@ export default {
     orientation: "portrait",
     icon: "./assets/images/logo.png",
     scheme: "streamapp",
+    deepLinks: true,
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     ios: {

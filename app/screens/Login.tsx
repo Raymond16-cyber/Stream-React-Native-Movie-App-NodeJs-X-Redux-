@@ -196,19 +196,29 @@ const Login = () => {
               {isLoading
                 ? "Loading..."
                 : isSuccess
-                ? "Success! Continue"
-                : "Login"}
+                  ? "Success! Continue"
+                  : "Login"}
             </Text>
           </Pressable>
 
           {/* Links */}
           {!isDisabled && (
             <>
-              <Pressable onPress={() => router.push("/screens/Register")}>
-                <Text className="text-center text-primary underline mt-4">
-                  Don’t have an account? Register
-                </Text>
-              </Pressable>
+              <View className="my-4 border-b border-gray-300 flex-row items-center justify-between">
+                <Pressable onPress={() => router.push("/screens/Register")}>
+                  <Text className="text-center text-primary underline mt-4">
+                    Don’t have an account? Register
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => router.push("/screens/ForgotPassword")}
+                > 
+                  <Text className="text-center text-primary underline mt-4">
+                    Forgot Password?
+                  </Text>
+                </Pressable>
+              </View>
 
               <Pressable
                 onPress={() => router.push("/screens/Welcome")}

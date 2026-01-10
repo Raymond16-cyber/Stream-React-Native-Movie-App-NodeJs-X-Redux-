@@ -22,10 +22,10 @@ const TabIcon = ({ icon, name, focused }: Props) => {
     </View>
   ) : (
     <View className="flex size-full justify-center items-center mt-4 rounded-full ">
-      <Image source={icon} className="size-8" tintColor="#A8B5DB" />
+      <Image source={icon}  tintColor="#A8B5DB" style={{ width: 28, height: 30 }} />
     </View>
   );
-};
+}; 
 
 const _layout = () => {
   return (
@@ -78,6 +78,16 @@ const _layout = () => {
           title: "Saved",
           tabBarIcon: ({ focused }) => (
             <TabIcon icon={icons.save} name="Saved" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="community"
+        options={{
+          headerShown: false,
+          title: "Community",
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon={icons.community} name="Community" focused={focused} />
           ),
         }}
       />

@@ -15,7 +15,7 @@ const HeroMovie: React.FC<HeroMovieProps> = ({ title, poster, onPress }) => {
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.85} className="my-4">
-      <View style={{ width: width - 32, height: imageHeight }} className="mx-auto relative">
+      <View style={{ width: width - 32, height: imageHeight }} className="mx-auto relative rounded-2xl overflow-hidden">
         {poster ? (
           <Image
             source={{ uri: poster }}

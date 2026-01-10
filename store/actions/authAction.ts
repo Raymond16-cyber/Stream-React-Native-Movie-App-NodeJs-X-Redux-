@@ -1,11 +1,11 @@
 import { ThunkAction } from "redux-thunk";
 import axios, { AxiosError } from "axios";
-import { LOAD_USER, LOAD_USER_FAIL, LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_FAIL, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS, SET_SECURITY_PIN, SET_SECURITY_PIN_FAIL } from "../types/type"
+import { AUTH_DESTROY_ACCOUNT, AUTH_DESTROY_ACCOUNT_FAIL, AUTH_ERROR, LOAD_USER, LOAD_USER_FAIL, LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_FAIL, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS, SET_SECURITY_PIN, SET_SECURITY_PIN_FAIL } from "../types/type"
 import { RootState } from "../store";
 import { AnyAction } from "redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const baseURL = "http://10.144.166.219:4000";
+export const baseURL = "http://10.59.27.219:4000";
 
 type regData = {
       email: string,
@@ -83,7 +83,9 @@ export const loginAction = (
 export const LogoutAction = (): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
   return async (dispatch) => {
     try {
-      await AsyncStorage.removeItem("authToken");
+      await AsyncStorage.removeItem("authToken"); 
+      const store = await AsyncStorage.getAllKeys();
+      console.log("Cleared AsyncStorage keys:", store);
       dispatch({
         type: LOGOUT_SUCCESS,
         payload: { 
@@ -103,6 +105,53 @@ export const LogoutAction = (): ThunkAction<Promise<void>, RootState, unknown, A
   };
 };
 
+export const authForgetPasswordAction = (
+  email: string
+): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => { 
+  return async (dispatch) => {
+    try {
+      console.log("Forgot password action triggered for email:", email);
+      const response = await axios.post(`${baseURL}/api/auth/forgot-password`, { email });
+    }catch (error) {}
+  }
+};
+
+export const destroyAccountAction = (): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
+  return async (dispatch) => {
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      if (!token) throw new Error("No auth token found");
+      const response = await axios.delete(`${baseURL}/api/auth/destroy-account`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      });
+      await AsyncStorage.removeItem("authToken");
+      dispatch({
+        type: AUTH_DESTROY_ACCOUNT,
+        payload: { 
+          message: response.data.message,
+        },
+      })
+    }catch (error) {
+      console.warn("Account deletion failed", error);
+      let errorMsg = "Account deletion failed";
+      if (axios.isAxiosError(error)) {
+        errorMsg =
+          error.response?.data?.error ||
+          error.response?.data?.message ||
+          error.message;
+      }
+      dispatch({
+        type: AUTH_DESTROY_ACCOUNT_FAIL,
+        payload: { 
+          error: errorMsg 
+        },
+      })
+    }
+  };
+}
 
 export const loadUserAction = (): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
   return async (dispatch) => {

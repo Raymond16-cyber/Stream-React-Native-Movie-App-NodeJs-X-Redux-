@@ -3,7 +3,7 @@ import UserInfoCardContainer from "@/components/User/Settings/UserInfoCardContai
 import { icons } from "@/constants/icons";
 import { useAuth } from "@/Contexts/AuthContext";
 import { usePinSecurity } from "@/Contexts/PinSecurityContext";
-import { LogoutAction } from "@/store/actions/authAction";
+import { destroyAccountAction, LogoutAction } from "@/store/actions/authAction";
 import { toggleMultiProfileAction } from "@/store/actions/userAction";
 import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 
@@ -73,9 +73,22 @@ const Profile = () => {
     // setMultiProfileEnabled(false);
     dispatch(toggleMultiProfileAction());
   };
+
+  const destroyAccount = async () => {
+    if (user.securityPin != "") {
+      const allowed = await request();
+      console.log("PIN allowed:", allowed);
+      if (allowed) {
+        router.back();
+        await dispatch(destroyAccountAction());
+      }
+      return;
+    } else {
+      router.push("/security/createPin");
+    }
+  };
   useEffect(() => {
-      setMultiProfileEnabled(user.isMultiProfileEnabled);
-    
+    setMultiProfileEnabled(user.isMultiProfileEnabled);
   }, [user.isMultiProfileEnabled]);
   useFocusEffect(() => {
     console.log(user.isMultiProfileEnabled);
@@ -121,7 +134,11 @@ const Profile = () => {
                   }}
                 >
                   <Image
-                    source={user?.currentProfile?.image ? { uri: user?.currentProfile?.image } : icons.person}
+                    source={
+                      user?.currentProfile?.image
+                        ? { uri: user?.currentProfile?.image }
+                        : icons.person
+                    }
                     style={{
                       width: AVATAR_SIZE,
                       height: AVATAR_SIZE,
@@ -186,6 +203,7 @@ const Profile = () => {
           <TouchableOpacity
             className="bg-dark-100 rounded-lg py-3.5 flex flex-row items-center justify-center z-50"
             style={{ borderRadius: 16 }}
+            onPress={destroyAccount}
           >
             <MaterialCommunityIcons name="cancel" size={22} color="white" />
             <Text className="text-white font-semibold text-base ml-2">

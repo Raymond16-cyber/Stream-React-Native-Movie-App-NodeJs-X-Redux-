@@ -7,6 +7,7 @@ import { Provider } from "react-redux";
 import { store } from "@/store/store";
 import "../global.css";
 import { PinSecurityProvider } from "@/Contexts/PinSecurityContext";
+import * as Linking from "expo-linking";
 
 function RootLayoutNav() {
   const { user, restoreUserFromToken, loading, isAuthenticated } = useAuth();
@@ -28,16 +29,23 @@ function RootLayoutNav() {
     initApp();
   }, []);
 
-useEffect(() => {
-  if (!isReady || loading) return;
+  useEffect(() => {
+    if (!isReady || loading) return;
 
-  if (isAuthenticated) {
-    router.replace("/(tabs)");
-  } else {
-    router.replace("/screens/Login");
-  }
-}, [isAuthenticated, loading, isReady]);
-
+    if (isAuthenticated) {
+      router.replace("/(tabs)");
+    } else {
+      router.replace("/screens/Login");
+    }
+  }, [isAuthenticated, loading, isReady]);
+  useEffect(() => {
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        const token = url.split("/").pop();
+        console.log("RESET TOKEN:", token);
+      }
+    });
+  }, []);
 
   if (!isReady || loading) {
     return (
@@ -65,6 +73,10 @@ useEffect(() => {
           name="screens/Register"
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="screens/ForgotPassword"
+          options={{ headerShown: false }}
+        />
         <Stack.Screen name="movies/[id]" options={{ headerShown: false }} />
         <Stack.Screen
           name="movies/[id]/trailer"
@@ -83,6 +95,11 @@ useEffect(() => {
         <Stack.Screen name="security/usePin" options={{ headerShown: false }} />
         <Stack.Screen
           name="security/createPin"
+          options={{ headerShown: false }}
+        />
+        {/* community */}
+        <Stack.Screen
+          name="mycommunity/[communityid]"
           options={{ headerShown: false }}
         />
       </Stack>

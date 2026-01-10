@@ -6,6 +6,7 @@ import star from "@/assets/icons/star.png";
 import play from "@/assets/icons/play.png";
 import arrow from "@/assets/icons/arrow.png";
 import logo from "@/assets/images/logo.png";
+import community from "@/assets/icons/community.png";
 
 
 export const icons = {
@@ -16,5 +17,6 @@ export const icons = {
     star,
     play,
     arrow,
-    logo
+    logo,
+    community
 }

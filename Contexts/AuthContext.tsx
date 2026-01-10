@@ -31,15 +31,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [reduxUser]);
 
   // restore user from AsyncStorage token
-  const restoreUserFromToken = async () => {
-    try {
-      await dispatch(loadUserAction()); // update Redux
-      console.log("User restored from token:", reduxUser);
-      // setUser(reduxUser); // update context
-    } catch (err) {
-      console.warn("Failed to restore user from token", err);
+ const restoreUserFromToken = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+
+    if (!token) {
+      return; // 🚫 No token → do nothing
     }
-  };
+
+    await dispatch(loadUserAction());
+  } catch (err) {
+    console.warn("Failed to restore user from token", err);
+  }
+};
+
 
   return (
     <AuthContext.Provider

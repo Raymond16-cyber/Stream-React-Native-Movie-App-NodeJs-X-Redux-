@@ -21,16 +21,21 @@ import { CLEAR_ERRORS, CLEAR_SUCCESS_MESSAGE } from "@/store/types/type";
 const SIZE = 128;
 const MAX_PROFILES = 4;
 
-// ---------- PROFILE COMPONENT ----------
+// ---------------- PROFILE CARD ----------------
 const ProfileCard = ({
   profile,
   user,
-  isEditMode,
-  isSwitchMode,
+  showUpdateIcons,
+  showSwitch,
   setShowUpdateIcons,
   setShowSwitch,
   deleteProfile,
+  onAddProfile,
 }: any) => {
+  const isKids = profile?.isKids ?? false;
+  const isEditMode = profile && !isKids && showUpdateIcons === profile._id;
+  const isSwitchMode = profile && showSwitch === profile._id;
+
   return (
     <View style={{ width: "48%", alignItems: "center", padding: 10 }}>
       {/* MAIN TAG */}
@@ -78,7 +83,11 @@ const ProfileCard = ({
           <TouchableOpacity
             activeOpacity={0.9}
             onPress={() => {
-              setShowUpdateIcons(isEditMode ? "none" : profile._id);
+              // ✅ Only allow adults to go into edit mode
+              if (!isKids) {
+                setShowUpdateIcons(isEditMode ? "none" : profile._id);
+              }
+              // Everyone can switch
               setShowSwitch(isSwitchMode ? "none" : profile._id);
             }}
             style={{
@@ -111,7 +120,7 @@ const ProfileCard = ({
               </View>
             )}
 
-            {/* EDIT MODE OVERLAY */}
+            {/* EDIT MODE OVERLAY (Adults only) */}
             {isEditMode && (
               <View
                 style={{
@@ -131,9 +140,7 @@ const ProfileCard = ({
                   <AntDesign name="edit" size={28} color="white" />
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                  onPress={() => deleteProfile(profile._id)}
-                >
+                <TouchableOpacity onPress={() => deleteProfile(profile._id)}>
                   <AntDesign name="delete" size={28} color="red" />
                 </TouchableOpacity>
               </View>
@@ -168,6 +175,7 @@ const ProfileCard = ({
               alignItems: "center",
               justifyContent: "center",
             }}
+            onPress={onAddProfile}
           >
             <Text style={{ color: "white", fontSize: 40 }}>+</Text>
           </TouchableOpacity>
@@ -187,7 +195,7 @@ const ProfileCard = ({
   );
 };
 
-// ---------- CREATE PROFILE PAGE ----------
+// ---------------- CREATE PROFILE PAGE ----------------
 const CreateProfile = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showUpdateIcons, setShowUpdateIcons] = useState("none");
@@ -206,34 +214,53 @@ const CreateProfile = () => {
     ...Array(MAX_PROFILES - profiles.length).fill(null),
   ];
 
+  // CREATE PROFILE
   const createProfile = async () => {
-    if (profiles.length >= MAX_PROFILES) return;
+    if (!name.trim()) {
+      ToastAndroid.show("Please enter a name", ToastAndroid.SHORT);
+      return;
+    }
+
+    if (profiles.length >= MAX_PROFILES) {
+      ToastAndroid.show("Maximum profiles reached", ToastAndroid.SHORT);
+      return;
+    }
 
     setCreatingProfile(true);
 
-    const formData = new FormData();
-    formData.append("name", name);
-    if (image) {
-      formData.append("file", {
-        uri: image,
-        name: "profile.jpg",
-        type: "image/jpeg",
-      } as any);
+    try {
+      const formData = new FormData();
+      formData.append("name", name.trim());
+
+      if (image) {
+        formData.append("file", {
+          uri: image.startsWith("file://") ? image : `file://${image}`,
+          name: "profile.jpg",
+          type: "image/jpeg",
+        } as any);
+      }
+
+      await dispatch(createProfileAction(formData));
+
+      ToastAndroid.show("Profile created!", ToastAndroid.SHORT);
+      setIsModalVisible(false);
+      setName("");
+      setImage(null);
+    } catch (err) {
+      ToastAndroid.show("Failed to create profile", ToastAndroid.SHORT);
+      console.log("Create profile error:", err);
+    } finally {
+      setCreatingProfile(false);
     }
-
-    await dispatch(createProfileAction(formData));
-
-    setIsModalVisible(false);
-    setName("");
-    setImage(null);
-    setCreatingProfile(false);
   };
 
+  // DELETE PROFILE
   const deleteProfile = async (profileId: string) => {
     ToastAndroid.show("Deleting profile...", ToastAndroid.SHORT);
     await dispatch(deleteProfileAction(profileId));
   };
 
+  // SWITCH PROFILE
   const switchProfile = async () => {
     if (showSwitch === "none" || showSwitch === user?.currentProfile?._id) {
       ToastAndroid.show("Profile already active", ToastAndroid.SHORT);
@@ -243,6 +270,7 @@ const CreateProfile = () => {
     await dispatch(switchProfileAction({ profileId: showSwitch }));
   };
 
+  // TOAST FOR SUCCESS/ERROR
   useEffect(() => {
     if (message) {
       ToastAndroid.show(message, ToastAndroid.SHORT);
@@ -263,6 +291,7 @@ const CreateProfile = () => {
         paddingHorizontal: 20,
       }}
     >
+      {/* PROFILES GRID */}
       <View
         style={{
           flexDirection: "row",
@@ -273,14 +302,15 @@ const CreateProfile = () => {
       >
         {filledProfiles.map((profile: any, index: number) => (
           <ProfileCard
-            key={profile?._id || `empty-${index}`} // ✅ proper key
+            key={profile?._id || `empty-${index}`}
             profile={profile}
             user={user}
-            isEditMode={showUpdateIcons === profile?._id}
-            isSwitchMode={showSwitch === profile?._id}
+            showUpdateIcons={showUpdateIcons}
+            showSwitch={showSwitch}
             setShowUpdateIcons={setShowUpdateIcons}
             setShowSwitch={setShowSwitch}
             deleteProfile={deleteProfile}
+            onAddProfile={() => setIsModalVisible(true)}
           />
         ))}
       </View>

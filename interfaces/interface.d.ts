@@ -62,3 +62,20 @@ interface SavedMovie {
     poster_path : string,
     
 }
+
+// community interface
+// community.types.ts (recommended)
+interface Community {
+  _id: string;
+  name: string;
+  createdBy: string;
+  description: string;
+  image: string;
+  members: string[];
+  memberCount: number;
+  isJoined: boolean;
+  category: string;
+  lastMessage?: string;
+  lastMessageTime?: string | null;
+  unreadCount?: number;
+}
