@@ -120,7 +120,7 @@ const CommunityPage = () => {
     <SafeAreaView className="flex-1 bg-primary">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1"
+        className="flex-1 p-2"
       >
         {/* FlatList handles both header and messages */}
         <FlatList
