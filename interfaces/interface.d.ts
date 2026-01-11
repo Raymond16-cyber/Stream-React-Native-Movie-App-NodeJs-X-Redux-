@@ -79,3 +79,12 @@ interface Community {
   lastMessageTime?: string | null;
   unreadCount?: number;
 }
+
+interface CommunityMessage {
+  _id: string;
+  communityId: string;
+  senderId: string;
+  content: string;
+  createdAt: string;
+  isSystem?: boolean;
+}

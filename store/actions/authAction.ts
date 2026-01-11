@@ -5,7 +5,7 @@ import { RootState } from "../store";
 import { AnyAction } from "redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const baseURL = "http://10.59.27.219:4000";
+export const baseURL = "http://10.59.27.24:4000";
 
 type regData = {
       email: string,

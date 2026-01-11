@@ -3,7 +3,7 @@ import { RootState } from "../store";
 import { AnyAction } from "redux";
 import { baseURL } from "./authAction";
 import axios from "axios";
-import { FETCH_MY_COMMUNITIES_FAIL, FETCH_MY_COMMUNITIES_SUCCESS } from "../types/type";
+import { CREATE_COMMUNITY_FAIL, CREATE_COMMUNITY_SUCCESS, FETCH_MY_COMMUNITIES_FAIL, FETCH_MY_COMMUNITIES_SUCCESS } from "../types/type";
 
 
 
@@ -11,19 +11,33 @@ export const createCommunityAction = (
  formData: FormData
 ): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
   return async (dispatch) => {
-    console.log("Creating community with data:", formData);
-    const response = await axios.post(
-  `${baseURL}/api/community/create`,
-  formData,
-  {
-    withCredentials: true,
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  }
-);
+    try {
+      const response = await axios.post(
+    `${baseURL}/api/community/create`,
+    formData,
+    {
+      withCredentials: true,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  dispatch({
+    type: CREATE_COMMUNITY_SUCCESS,
+    payload: {message: response.data.message, community: response.data.community},
+  })
+      
+    } catch (error) {
+      const errorMessage = axios.isAxiosError(error) && error.response?.data?.error
+        ? error.response.data.error
+        : "Failed to create community";
+      console.error("Error creating community:", errorMessage);
+      dispatch({        type: CREATE_COMMUNITY_FAIL,
+        payload: {error: errorMessage, community: null},
+      });
+      
+    }
 
-    console.log("Create Community Response:", response.data);
   }}
 
   export const fetchMyCommunitiesAction = (): ThunkAction<
