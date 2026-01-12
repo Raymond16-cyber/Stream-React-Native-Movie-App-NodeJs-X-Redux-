@@ -75,6 +75,7 @@ interface Community {
   memberCount: number;
   isJoined: boolean;
   category: string;
+  messages?: CommunityMessage[];
   lastMessage?: string;
   lastMessageTime?: string | null;
   unreadCount?: number;
@@ -83,8 +84,10 @@ interface Community {
 interface CommunityMessage {
   _id: string;
   communityId: string;
+  senderName: string;
   senderId: string;
   content: string;
   createdAt: string;
   isSystem?: boolean;
+  readBy: string[];
 }
