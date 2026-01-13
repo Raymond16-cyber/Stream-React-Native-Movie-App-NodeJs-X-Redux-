@@ -56,6 +56,7 @@ interface MovieDetails {
 }
 
 interface SavedMovie {
+    userId:string,
     movie_id: number,
     movie_title: string,
     genres : [],

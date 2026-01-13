@@ -2,7 +2,7 @@ import { CLEAR_ERRORS, CLEAR_SUCCESS_MESSAGE, FETCH_SAVED_MOVIES, FETCH_SAVED_MO
 
 type MovieState = {
   trendingMovies: [],
-  savedMovies: [],
+  savedMovies: SavedMovie[],
   message: string;
   error: string;
   loading: boolean;
@@ -39,7 +39,10 @@ export const movieReducer = (
         return{
           ...state,
           savedStatus: true,
-          message:payload.message
+          message:payload.message,
+          savedMovies: [
+            ...state.savedMovies,payload.newMovie
+          ]
         }
         case SAVE_MOVIE_FAIL:
           return{

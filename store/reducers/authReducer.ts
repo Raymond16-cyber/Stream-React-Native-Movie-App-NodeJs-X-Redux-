@@ -7,6 +7,7 @@ type AuthState = {
   error: string;
   loading: boolean;
   isAuthenticated: boolean;
+  authChecked: boolean
 };
 
 const initialState: AuthState = {
@@ -16,6 +17,7 @@ const initialState: AuthState = {
   error: "",
   loading: false,
   isAuthenticated: false,
+  authChecked:false
 };
 
 export const authReducer = (
@@ -55,7 +57,8 @@ export const authReducer = (
         user: {},
         error: "",
         loading: false,
-        message: payload?.message
+        message: payload?.message,
+         authChecked: true, 
 
       }
     case LOGOUT_FAIL:
@@ -67,12 +70,14 @@ export const authReducer = (
       return {
         ...state,
         isAuthenticated: true,
+        authChecked: true,
         user: {...payload.user,currentProfile: payload.currentProfile},
       };
     case LOAD_USER_FAIL:
       return{
         ...state,
-        error:payload.error
+        error:payload.error,
+         authChecked: true, // ✅ still checked
       }
     case AUTH_DESTROY_ACCOUNT:
       return {

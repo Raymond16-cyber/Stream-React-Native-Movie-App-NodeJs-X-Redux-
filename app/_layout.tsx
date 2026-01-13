@@ -11,7 +11,7 @@ import * as Linking from "expo-linking";
 import { io } from "socket.io-client";
 
 function RootLayoutNav() {
-  const { user, restoreUserFromToken, loading, isAuthenticated } = useAuth();
+  const { user, restoreUserFromToken, loading, isAuthenticated,authChecked } = useAuth();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -31,14 +31,14 @@ function RootLayoutNav() {
   }, []);
 
   useEffect(() => {
-    if (!isReady || loading) return;
+  if (!isReady || loading || !authChecked) return;
 
-    if (isAuthenticated) {
-      router.replace("/(tabs)");
-    } else {
-      router.replace("/screens/Login");
-    }
-  }, [isAuthenticated, loading, isReady]);
+  if (isAuthenticated) {
+    router.replace("/(tabs)");
+  } else {
+    router.replace("/screens/Login");
+  }
+}, [isAuthenticated, loading, isReady, authChecked]);
   useEffect(() => {
     Linking.getInitialURL().then((url) => {
       if (url) {
@@ -47,21 +47,20 @@ function RootLayoutNav() {
       }
     });
   }, []);
-
-  if (!isReady || loading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#0f0d23",
-        }}
-      >
-        <ActivityIndicator size="large" color="#fff" />
-      </View>
-    );
-  }
+if (!isReady || loading || !authChecked) {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#0f0d23",
+      }}
+    >
+      <ActivityIndicator size="large" color="#fff" />
+    </View>
+  );
+}
 
   return (
     <>

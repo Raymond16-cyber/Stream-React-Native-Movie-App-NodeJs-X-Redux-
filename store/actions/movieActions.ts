@@ -70,11 +70,13 @@ return async (dispatch) => {
     const response = await axios.post(`${baseURL}/api/v1/save-movie`, {movie,userId},{
       withCredentials:true
     });
+    console.log("n",response.data.data)
     dispatch({
       type: SAVE_MOVIE,
       payload:{
         success: response.data.success,
-        message:response.data.message
+        message:response.data.message,
+        newMovie:response.data.data
       }
     })
           

@@ -12,15 +12,16 @@ type AuthContextType = {
   isAuthenticated: boolean;
   setUser: (user: any) => void;
   restoreUserFromToken: () => Promise<void>;
+  authChecked: boolean
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useAppDispatch();
-  const { loading, error, user: reduxUser, isAuthenticated } = useAppSelector(
-  (state: RootState) => state.auth
-);
+ const { loading, error, user: reduxUser, isAuthenticated, authChecked } =
+  useAppSelector((state: RootState) => state.auth);
+
 
 
   const [user, setUser] = useState(reduxUser);
@@ -33,8 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // restore user from AsyncStorage token
  const restoreUserFromToken = async () => {
   try {
-    const token = await AsyncStorage.getItem("token");
-
+    const token = await AsyncStorage.getItem("authToken");
     if (!token) {
       return; // 🚫 No token → do nothing
     }
@@ -55,6 +55,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     error,
     restoreUserFromToken,
     isAuthenticated,
+    authChecked
   }}
 >
 
