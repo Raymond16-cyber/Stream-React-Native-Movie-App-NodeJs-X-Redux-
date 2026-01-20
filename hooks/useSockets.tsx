@@ -1,18 +1,21 @@
+import { useAuth } from "@/Contexts/AuthContext";
 import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 
-const SOCKET_URL = "http://10.59.27.24:8000";
+const SOCKET_URL = "http://172.20.10.4:8000";
 
-const useAppSockets = (userId: string | null) => {
+const useAppSockets = () => {
   const socketRef = useRef<Socket | null>(null);
+  const { user } = useAuth()
+  
 
   useEffect(() => {
-    if (!userId) return;
+    if (!user?._id) return;
 
     if (!socketRef.current) {
       socketRef.current = io(SOCKET_URL, {
         transports: ["websocket"],
-        auth: { userId },
+        auth: { userId: user?._id },
       });
 
       socketRef.current.on("connect", () => {
@@ -24,7 +27,7 @@ const useAppSockets = (userId: string | null) => {
       socketRef.current?.disconnect();
       socketRef.current = null;
     };
-  }, [userId]);
+  }, [user?._id]);
 
   return socketRef;
 };

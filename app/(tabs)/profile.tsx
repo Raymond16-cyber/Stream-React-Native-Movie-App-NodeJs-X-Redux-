@@ -6,6 +6,7 @@ import { usePinSecurity } from "@/Contexts/PinSecurityContext";
 import { destroyAccountAction, LogoutAction } from "@/store/actions/authAction";
 import { toggleMultiProfileAction } from "@/store/actions/userAction";
 import { useAppDispatch } from "@/store/hooks/useAppDispatch";
+import { Ionicons } from "@expo/vector-icons";
 
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
@@ -96,10 +97,16 @@ const Profile = () => {
   return (
     <SafeAreaView className="flex flex-col flex-1 bg-primary px-2">
       {/* Header */}
-      <View className="py-3 justify-center" style={{ paddingBottom: 10 }}>
+      <View className="border-b border-light-300/10 flex flex-row items-center  px-3">
+      <View className="py-3 justify-center flex-1" style={{ paddingBottom: 10 }}>
         <Text className="text-light-200 text-center" style={{ fontSize: 22 }}>
           Account
         </Text>
+      </View>
+
+<TouchableOpacity onPress={()=> router.push("/customer-services/customer-care")}>
+      <AntDesign name="customer-service" size={24} color="white" />
+      </TouchableOpacity>
       </View>
 
       <ScrollView

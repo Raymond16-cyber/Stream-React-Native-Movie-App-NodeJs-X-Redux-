@@ -4,15 +4,19 @@ import useCreateProfileImage from "@/hooks/useCreateProfileImage";
 import {
   createCommunityAction,
   fetchMyCommunitiesAction,
+  refetchLastMessageAction,
 } from "@/store/actions/community.action";
 import { useAppDispatch, useAppSelector } from "@/store/hooks/useAppDispatch";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { useFocusEffect } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
   Image,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   Text,
   TextInput,
@@ -20,13 +24,14 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import useAppSockets from "@/hooks/useSockets";
 
 const community = () => {
   const { user } = useAuth();
   const { image, pickImage, setImage } = useCreateProfileImage();
   const dispatch = useAppDispatch();
   const { myCommunities } = useAppSelector((state) => state.communities);
-  console.log("My Communities from Redux:", myCommunities);
+  const socketRef = useAppSockets();
   const [activeTab, setActiveTab] = useState<"my" | "discover">("my");
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [newCommunity, setNewCommunity] = useState({
@@ -35,6 +40,43 @@ const community = () => {
     category: "General",
     image: "",
   });
+  const [ isCreatingCommunity, setIsCreatingCommunity ] = useState(false);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      dispatch(fetchMyCommunitiesAction());
+    }, [dispatch])
+  );
+
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket) return;
+
+    // join all user communities to receive live updates on the list screen
+    myCommunities?.forEach((community) => {
+      if (community?._id) {
+        socket.emit("joinCommunity", community._id);
+      }
+    });
+
+    const handleReceiveMessage = (message: any) => {
+      if (message?.senderId === user?._id) return; // ignore own messages to avoid duplicates
+      dispatch({
+        type: "RECEIVED_SOCKET_MESSAGE",
+        payload: {
+          communityId: message.communityId,
+          message,
+        },
+      });
+      dispatch(refetchLastMessageAction(message.communityId));
+    };
+
+    socket.on("receiveMessage", handleReceiveMessage);
+
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage);
+    };
+  }, [socketRef, myCommunities, dispatch, user?._id]);
 
   const recommendedCommunities: Community[] = [
     {
@@ -84,6 +126,7 @@ const community = () => {
   ];
 
   const handleCreateCommunity = async () => {
+    setIsCreatingCommunity(true);
     const communityData = {
       name: newCommunity.name,
       description: newCommunity.description,
@@ -110,6 +153,7 @@ const community = () => {
     }
 
     await dispatch(createCommunityAction(formData));
+    setIsCreatingCommunity(false);
 
     setCreateModalVisible(false);
     setNewCommunity({
@@ -120,10 +164,6 @@ const community = () => {
     });
     setImage(null); // reset picker
   };
-  //   get communities
-  useEffect(() => {
-    dispatch(fetchMyCommunitiesAction());
-  }, [dispatch]);
 
   useEffect(() => {
     if (image) {
@@ -188,6 +228,7 @@ const community = () => {
         </View>
 
         {/* Content */}
+       
         <ScrollView
           className="flex-1 px-4"
           showsVerticalScrollIndicator={false}
@@ -230,27 +271,37 @@ const community = () => {
         </ScrollView>
 
         {/* Create Community Modal */}
-        <Modal
-          visible={createModalVisible}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setCreateModalVisible(false)}
-        >
-          <View className="flex-1 bg-black/50 justify-end">
-            <View className="bg-secondary rounded-t-3xl p-6 h-[500px]">
-              <View className="flex-row items-center justify-between mb-6">
-                <Text className="text-white text-2xl font-bold">
-                  Create Community
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setCreateModalVisible(false)}
-                  className="bg-dark-100 rounded-full p-2"
-                >
-                  <Ionicons name="close" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              </View>
+       <Modal
+  visible={createModalVisible}
+  animationType="slide"
+  transparent
+  onRequestClose={() => setCreateModalVisible(false)}
+>
+  <View className="flex-1 bg-black/50 justify-end">
+    {/* Only wrap the content area */}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
+    >
+      <View className="bg-secondary rounded-t-3xl max-h-[90%]">
+        <View className="flex-row items-center justify-between mb-6 px-6 pt-6">
+          <Text className="text-white text-2xl font-bold">
+            Create Community
+          </Text>
+          <TouchableOpacity
+            onPress={() => setCreateModalVisible(false)}
+            className="bg-dark-100 rounded-full p-2"
+          >
+            <Ionicons name="close" size={24} color="#ffffff" />
+          </TouchableOpacity>
+        </View>
 
-              <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          className="px-6"
+          contentContainerStyle={{ paddingBottom: 40 }}
+          keyboardShouldPersistTaps="handled"
+        >
                 <Text className="text-light-200 text-sm mb-2">
                   Community Image
                 </Text>
@@ -366,13 +417,17 @@ const community = () => {
                   onPress={handleCreateCommunity}
                 >
                   <Text className="text-white text-center font-bold text-base">
-                    Create Community
+                    {
+                      isCreatingCommunity ? 'Creating...' : 'Create Community'
+                    }
                   </Text>
                 </TouchableOpacity>
               </ScrollView>
-            </View>
-          </View>
-        </Modal>
+      </View>
+    </KeyboardAvoidingView>
+  </View>
+</Modal>
+
       </View>
     </SafeAreaView>
   );

@@ -77,17 +77,26 @@ interface Community {
   isJoined: boolean;
   category: string;
   messages?: CommunityMessage[];
-  lastMessage?: string;
+  lastMessage?: {
+    content: string;
+    senderName: string;
+    senderImage: string;
+  };
+  lastMessageSender?: string;
   lastMessageTime?: string | null;
   unreadCount?: number;
 }
 
 interface CommunityMessage {
-  _id: string;
+  _id?: string;
+  id?: string;
   communityId: string;
+  senderImage: string;
   senderName: string;
   senderId: string;
   content: string;
+  text?: string;
+  timestamp?: string;
   createdAt: string;
   isSystem?: boolean;
   readBy: string[];

@@ -1,9 +1,14 @@
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import React from "react";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
+import { useAppDispatch } from "@/store/hooks/useAppDispatch";
+import { refetchLastMessageAction } from "@/store/actions/community.action";
+import { useAuth } from "@/Contexts/AuthContext";
 
 const CommunityCard = ({ community }: { community: Community }) => {
+  const dispatch = useAppDispatch();
+  const { user} = useAuth() 
   const handleOpenChat = (communityId: string) => {
     // TODO: Navigate to chat screen
     console.log("Opening chat for community:", communityId);
@@ -16,6 +21,13 @@ const CommunityCard = ({ community }: { community: Community }) => {
     // TODO: Implement join community API call
     console.log("Joining community:", communityId);
   };
+  const unreadMessagesCount = community.messages?.filter((msg) => !msg.readBy?.includes(user._id))
+  console.log("Unread messages count:",unreadMessagesCount)
+
+  useFocusEffect(()=>{
+  dispatch(refetchLastMessageAction(community._id));
+})
+
   return (
     <TouchableOpacity
       className="bg-dark-100 rounded-2xl mb-4 overflow-hidden"
@@ -38,11 +50,11 @@ const CommunityCard = ({ community }: { community: Community }) => {
             <Text className="text-white font-bold text-base" numberOfLines={1}>
               {community.name}
             </Text>
-            {typeof community.unreadCount === "number" &&
-              community.unreadCount > 0 && (
+            {typeof unreadMessagesCount?.length === "number" &&
+              unreadMessagesCount.length > 0 && (
                 <View className="bg-accent rounded-full px-2 py-1 min-w-[24px] items-center">
                   <Text className="text-white text-xs font-bold">
-                    {community.unreadCount}
+                    {unreadMessagesCount?.length}
                   </Text>
                 </View>
               )}
@@ -85,10 +97,10 @@ const CommunityCard = ({ community }: { community: Community }) => {
       </View>
 
       {/* Last Message Preview (for joined communities) */}
-      {community.isJoined && community.lastMessage && (
+      {community.isJoined && community.lastMessage?.content && (
         <View className="px-4 pb-3 border-t border-light-300/10 pt-2 mt-1">
           <Text className="text-light-200 text-sm" numberOfLines={1}>
-            {community.lastMessage}
+           {community.lastMessage.content}
           </Text>
         </View>
       )}

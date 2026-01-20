@@ -118,7 +118,6 @@ export default function Index() {
             Math.floor(Math.random() * movieRecommendations.length)
           ];
         setRandomRecommendedMovie(randomMovie);
-        console.log("Random Recommended Movie:", randomMovie);
       }
     };
 

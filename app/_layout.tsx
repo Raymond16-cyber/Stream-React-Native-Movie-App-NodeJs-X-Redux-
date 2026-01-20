@@ -34,6 +34,7 @@ function RootLayoutNav() {
   if (!isReady || loading || !authChecked) return;
 
   if (isAuthenticated) {
+    router.replace("/screens/Login");
     router.replace("/(tabs)");
   } else {
     router.replace("/screens/Login");
@@ -43,7 +44,6 @@ function RootLayoutNav() {
     Linking.getInitialURL().then((url) => {
       if (url) {
         const token = url.split("/").pop();
-        console.log("RESET TOKEN:", token);
       }
     });
   }, []);
@@ -82,6 +82,39 @@ if (!isReady || loading || !authChecked) {
           name="movies/[id]/trailer"
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="settings/PersonalInfo"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="settings/Notifications"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="settings/DiscountCodes"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="settings/PaymentMethod"
+          options={{ headerShown: false }}
+        />
+        {/* customer services */}
+        <Stack.Screen
+          name="customer-services/customer-care"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="settings/AccountUpgrade"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="settings/Security"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="settings/Languages"
+          options={{ headerShown: false }}
+        />
         {/* settings */}
         <Stack.Screen
           name="settings/CustomizeProfile"
@@ -100,6 +133,10 @@ if (!isReady || loading || !authChecked) {
         {/* community */}
         <Stack.Screen
           name="mycommunity/[communityid]"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="community/add-member"
           options={{ headerShown: false }}
         />
       </Stack>
