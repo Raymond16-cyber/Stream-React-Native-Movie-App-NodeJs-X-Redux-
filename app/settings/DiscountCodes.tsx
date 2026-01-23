@@ -1,5 +1,15 @@
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, ActivityIndicator, KeyboardAvoidingView, Platform, Image } from 'react-native'
-import React, { useState } from 'react'
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  Modal,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native'
+import React, { useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
@@ -11,89 +21,98 @@ const DiscountCodes = () => {
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
 
-  const activeDiscounts = [
-    {
-      id: '1',
-      code: 'WELCOME20',
-      description: '20% off first purchase',
-      discount: '20%',
-      expiresIn: '5 days',
-      icon: 'gift',
-      used: true,
-    },
-    {
-      id: '2',
-      code: 'NEWYEAR30',
-      description: 'New Year Special - 30% off',
-      discount: '30%',
-      expiresIn: '10 days',
-      icon: 'star',
-      used: false,
-    },
-    {
-      id: '3',
-      code: 'FRIEND25',
-      description: 'Refer a friend - 25% off',
-      discount: '25%',
-      expiresIn: 'No expiry',
-      icon: 'account-multiple',
-      used: false,
-    },
-  ]
+  const activeDiscounts = useMemo(
+    () => [
+      {
+        id: '1',
+        code: 'WELCOME20',
+        description: '20% off first purchase',
+        discount: '20%',
+        expiresIn: '5 days',
+        icon: 'gift',
+        used: true,
+      },
+      {
+        id: '2',
+        code: 'NEWYEAR30',
+        description: 'New Year Special - 30% off',
+        discount: '30%',
+        expiresIn: '10 days',
+        icon: 'star',
+        used: false,
+      },
+      {
+        id: '3',
+        code: 'FRIEND25',
+        description: 'Refer a friend - 25% off',
+        discount: '25%',
+        expiresIn: 'No expiry',
+        icon: 'account-multiple',
+        used: false,
+      },
+    ],
+    []
+  )
 
-  const availablePromotions = [
-    {
-      id: '1',
-      title: 'Summer Bundle Deal',
-      description: 'Get 3 months for the price of 2',
-      code: 'SUMMER22',
-      discount: '33%',
-      badge: 'Limited Time',
-      color: '#FF6B6B',
-    },
-    {
-      id: '2',
-      title: 'Student Discount',
-      description: 'Verify your student ID for 50% off',
-      code: 'STUDENT50',
-      discount: '50%',
-      badge: 'Exclusive',
-      color: '#4ECDC4',
-    },
-    {
-      id: '3',
-      title: 'Family Plan',
-      description: 'Add 4 profiles to one account',
-      code: 'FAMILY4',
-      discount: '15%',
-      badge: 'New',
-      color: '#95E1D3',
-    },
-  ]
+  const availablePromotions = useMemo(
+    () => [
+      {
+        id: '1',
+        title: 'Summer Bundle Deal',
+        description: 'Get 3 months for the price of 2',
+        code: 'SUMMER22',
+        discount: '33%',
+        badge: 'Limited Time',
+        color: '#FF6B6B',
+      },
+      {
+        id: '2',
+        title: 'Student Discount',
+        description: 'Verify your student ID for 50% off',
+        code: 'STUDENT50',
+        discount: '50%',
+        badge: 'Exclusive',
+        color: '#4ECDC4',
+      },
+      {
+        id: '3',
+        title: 'Family Plan',
+        description: 'Add 4 profiles to one account',
+        code: 'FAMILY4',
+        discount: '15%',
+        badge: 'New',
+        color: '#95E1D3',
+      },
+    ],
+    []
+  )
 
-  const discountHistory = [
-    {
-      id: '1',
-      code: 'WELCOME20',
-      discount: '-$20.00',
-      appliedOn: 'Jan 5, 2026',
-      status: 'Applied',
-    },
-    {
-      id: '2',
-      code: 'NEWYEAR30',
-      discount: '-$45.00',
-      appliedOn: 'Dec 28, 2025',
-      status: 'Applied',
-    },
-    {
-      id: '3',
-      code: 'INVALID99',
-      discount: 'Rejected',
-      appliedOn: 'Dec 20, 2025',
-      status: 'Expired',
-    },
-  ]
+  const discountHistory = useMemo(
+    () => [
+      {
+        id: '1',
+        code: 'WELCOME20',
+        discount: '-$20.00',
+        appliedOn: 'Jan 5, 2026',
+        status: 'Applied',
+      },
+      {
+        id: '2',
+        code: 'NEWYEAR30',
+        discount: '-$45.00',
+        appliedOn: 'Dec 28, 2025',
+        status: 'Applied',
+      },
+      {
+        id: '3',
+        code: 'INVALID99',
+        discount: 'Rejected',
+        appliedOn: 'Dec 20, 2025',
+        status: 'Expired',
+      },
+    ],
+    []
+  )
 
   const handleRedeemCode = async () => {
     if (!promoCode.trim()) {
@@ -198,7 +217,7 @@ const DiscountCodes = () => {
                     <Text className='text-white font-bold text-base'>{promo.title}</Text>
                     <Text className='text-light-300 text-xs mt-1'>{promo.description}</Text>
                   </View>
-                  <View className='bg-red-500 rounded-full px-2 py-1'>
+                  <View style={{ backgroundColor: promo.color }} className='rounded-full px-2 py-1'>
                     <Text className='text-white text-xs font-bold'>{promo.badge}</Text>
                   </View>
                 </View>

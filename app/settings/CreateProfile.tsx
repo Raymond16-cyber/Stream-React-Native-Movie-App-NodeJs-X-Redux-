@@ -3,7 +3,8 @@ import {
   Text,
   Image,
   TouchableOpacity,
-  ToastAndroid,
+  Platform,
+  Alert,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/Contexts/AuthContext";
@@ -214,15 +215,26 @@ const CreateProfile = () => {
     ...Array(MAX_PROFILES - profiles.length).fill(null),
   ];
 
+  const showToast = (msg: string) => {
+    if (Platform.OS === "android") {
+      // Native Android toast
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { ToastAndroid } = require("react-native");
+      ToastAndroid.show(msg, ToastAndroid.SHORT);
+    } else {
+      Alert.alert("", msg);
+    }
+  };
+
   // CREATE PROFILE
   const createProfile = async () => {
     if (!name.trim()) {
-      ToastAndroid.show("Please enter a name", ToastAndroid.SHORT);
+      showToast("Please enter a name");
       return;
     }
 
     if (profiles.length >= MAX_PROFILES) {
-      ToastAndroid.show("Maximum profiles reached", ToastAndroid.SHORT);
+      showToast("Maximum profiles reached");
       return;
     }
 
@@ -242,13 +254,12 @@ const CreateProfile = () => {
 
       await dispatch(createProfileAction(formData));
 
-      ToastAndroid.show("Profile created!", ToastAndroid.SHORT);
+      showToast("Profile created!");
       setIsModalVisible(false);
       setName("");
       setImage(null);
     } catch (err) {
-      ToastAndroid.show("Failed to create profile", ToastAndroid.SHORT);
-      console.log("Create profile error:", err);
+      showToast("Failed to create profile");
     } finally {
       setCreatingProfile(false);
     }
@@ -256,14 +267,14 @@ const CreateProfile = () => {
 
   // DELETE PROFILE
   const deleteProfile = async (profileId: string) => {
-    ToastAndroid.show("Deleting profile...", ToastAndroid.SHORT);
+    showToast("Deleting profile...");
     await dispatch(deleteProfileAction(profileId));
   };
 
   // SWITCH PROFILE
   const switchProfile = async () => {
     if (showSwitch === "none" || showSwitch === user?.currentProfile?._id) {
-      ToastAndroid.show("Profile already active", ToastAndroid.SHORT);
+      showToast("Profile already active");
       return;
     }
 
@@ -273,11 +284,11 @@ const CreateProfile = () => {
   // TOAST FOR SUCCESS/ERROR
   useEffect(() => {
     if (message) {
-      ToastAndroid.show(message, ToastAndroid.SHORT);
+      showToast(message);
       setTimeout(() => dispatch({ type: CLEAR_SUCCESS_MESSAGE }), 2000);
     }
     if (error) {
-      ToastAndroid.show(error, ToastAndroid.SHORT);
+      showToast(error);
       setTimeout(() => dispatch({ type: CLEAR_ERRORS }), 3000);
     }
   }, [message, error]);

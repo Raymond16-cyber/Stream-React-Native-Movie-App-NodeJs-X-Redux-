@@ -146,10 +146,10 @@ const Security = () => {
       const hasHardware = await LocalAuthentication.hasHardwareAsync()
       const isEnrolled = await LocalAuthentication.isEnrolledAsync()
       const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync()
-      const typeLabel = supportedTypes.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)
-        ? 'Fingerprint'
-        : supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)
+      const typeLabel = supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)
         ? 'Face ID'
+        : supportedTypes.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)
+        ? 'Fingerprint'
         : supportedTypes.includes(LocalAuthentication.AuthenticationType.IRIS)
         ? 'Iris'
         : 'Biometric'

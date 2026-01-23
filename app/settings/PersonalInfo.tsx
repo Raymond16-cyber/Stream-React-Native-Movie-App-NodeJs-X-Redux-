@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
@@ -9,7 +9,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const PersonalInfo = () => {
   const { user } = useAuth()
-  const startedAt = AsyncStorage.getItem("startedAt");
+  const [startedAt, setStartedAt] = useState<string | null>(null)
+
+  useEffect(() => {
+    const loadStartedAt = async () => {
+      const stored = await AsyncStorage.getItem('startedAt')
+      if (stored) setStartedAt(stored)
+    }
+
+    loadStartedAt()
+  }, [])
+
+  const memberSince = startedAt ? new Date(startedAt).toLocaleDateString() : 'N/A'
   const userInfo = [
     {
       label: 'Email',
@@ -28,7 +39,7 @@ const PersonalInfo = () => {
     },
     {
       label: 'Member Since',
-      value: startedAt ? new Date(startedAt).toLocaleDateString() : 'N/A',
+      value: memberSince,
       icon: 'calendar',
     },
     {

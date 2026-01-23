@@ -65,7 +65,14 @@ const saved = () => {
 
         <FlatList
           data={savedMovies}
-          renderItem={({ item }) => <UserListCard item={item} />}
+          renderItem={({ item }) => (
+            <UserListCard 
+              item={item} 
+              onRemove={(movieId: number) => {
+                // TODO: Implement remove from saved movies
+              }}
+            />
+          )}
           keyExtractor={(item) => item.movie_id.toString()}
         />
 

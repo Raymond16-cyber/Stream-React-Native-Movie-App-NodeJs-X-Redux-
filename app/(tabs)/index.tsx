@@ -301,7 +301,7 @@ export default function Index() {
                 showsHorizontalScrollIndicator={false}
                 ItemSeparatorComponent={() => <View className="w-4" />}
                 className="mb-4 mt-3"
-                data={trendingMovies}
+                data={trendingMovies as any[]}
                 renderItem={({ item, index }) => (
                   <TrendingMovieCard movie={item} index={index} />
                 )}
@@ -322,7 +322,7 @@ export default function Index() {
                 showsHorizontalScrollIndicator={false}
                 ItemSeparatorComponent={() => <View className="w-4" />}
                 className="mb-4 mt-3"
-                data={movieRecommendations}
+                data={movieRecommendations as Movie[]}
                 renderItem={({ item, index }) => (
                   <MovieRecommendationCard item={item} index={index} />
                 )}
@@ -345,7 +345,7 @@ export default function Index() {
           )}
           {movies && (
             <FlatList
-              data={movies}
+              data={movies as Movie[]}
               renderItem={({ item }) => <MovieCard item={item} />}
               keyExtractor={(item) => item.id.toString()}
               numColumns={3}

@@ -1,5 +1,5 @@
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
+import React, { useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
@@ -8,56 +8,89 @@ import { router } from 'expo-router'
 const AccountUpgrade = () => {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly')
 
-  const premiumFeatures = [
-    {
-      icon: 'crown',
-      title: 'Ad-Free Experience',
-      description: 'Enjoy streaming without interruptions',
-    },
-    {
-      icon: 'quality-high',
-      title: '4K Ultra HD Quality',
-      description: 'Watch movies in stunning quality',
-    },
-    {
-      icon: 'download',
-      title: 'Offline Downloads',
-      description: 'Download and watch anywhere',
-    },
-    {
-      icon: 'account-group',
-      title: 'Unlimited Communities',
-      description: 'Create and join unlimited communities',
-    },
-    {
-      icon: 'play-speed',
-      title: 'Early Access',
-      description: 'Get new features before everyone else',
-    },
-    {
-      icon: 'shield-check',
-      title: 'Priority Support',
-      description: '24/7 dedicated customer support',
-    },
-  ]
+  const premiumFeatures = useMemo(
+    () => [
+      {
+        icon: 'crown',
+        title: 'Ad-Free Experience',
+        description: 'Enjoy streaming without interruptions',
+      },
+      {
+        icon: 'quality-high',
+        title: '4K Ultra HD Quality',
+        description: 'Watch movies in stunning quality',
+      },
+      {
+        icon: 'download',
+        title: 'Offline Downloads',
+        description: 'Download and watch anywhere',
+      },
+      {
+        icon: 'account-group',
+        title: 'Unlimited Communities',
+        description: 'Create and join unlimited communities',
+      },
+      {
+        icon: 'play-speed',
+        title: 'Early Access',
+        description: 'Get new features before everyone else',
+      },
+      {
+        icon: 'shield-check',
+        title: 'Priority Support',
+        description: '24/7 dedicated customer support',
+      },
+    ],
+    []
+  )
 
-  const plans = {
-    monthly: {
-      price: '$9.99',
-      period: 'month',
-      savings: null,
-    },
-    yearly: {
-      price: '$99.99',
-      period: 'year',
-      savings: 'Save $20',
-    },
-  }
+  const plans = useMemo(
+    () => ({
+      monthly: {
+        price: '$9.99',
+        period: 'month',
+        savings: null,
+        badge: 'Most Flexible',
+      },
+      yearly: {
+        price: '$99.99',
+        period: 'year',
+        savings: 'Save $20',
+        badge: 'Best Value',
+      },
+    }),
+    []
+  )
 
   const handleUpgrade = () => {
     // Placeholder for payment integration
     alert(`Upgrading to ${selectedPlan} plan...`)
   }
+
+  const PlanCard = ({ type }: { type: 'monthly' | 'yearly' }) => (
+    <TouchableOpacity
+      onPress={() => setSelectedPlan(type)}
+      className={`flex-1 rounded-2xl p-4 border-2 relative ${
+        selectedPlan === type ? 'border-accent bg-accent/10' : 'border-light-300/20 bg-dark-100'
+      }`}
+    >
+      {plans[type].badge && (
+        <View className='absolute -top-2 left-3 bg-accent rounded-full px-3 py-1'>
+          <Text className='text-primary text-xs font-bold'>{plans[type].badge}</Text>
+        </View>
+      )}
+      {plans[type].savings && (
+        <View className='absolute -top-2 right-3 bg-accent rounded-full px-3 py-1'>
+          <Text className='text-primary text-xs font-bold'>{plans[type].savings}</Text>
+        </View>
+      )}
+      <Text className={`font-bold text-lg ${selectedPlan === type ? 'text-accent' : 'text-white'}`}>
+        {type === 'monthly' ? 'Monthly' : 'Yearly'}
+      </Text>
+      <Text className='text-white text-2xl font-bold mt-2'>{plans[type].price}</Text>
+      <Text className='text-light-300 text-xs mt-1'>per {plans[type].period}</Text>
+    </TouchableOpacity>
+  )
 
   return (
     <SafeAreaView className='bg-primary flex-1'>
@@ -87,36 +120,8 @@ const AccountUpgrade = () => {
         <View className='px-4 mt-6'>
           <Text className='text-white text-lg font-bold mb-3'>Choose Your Plan</Text>
           <View className='flex-row gap-3'>
-            <TouchableOpacity
-              onPress={() => setSelectedPlan('monthly')}
-              className={`flex-1 rounded-2xl p-4 border-2 ${
-                selectedPlan === 'monthly' ? 'border-accent bg-accent/10' : 'border-light-300/20 bg-dark-100'
-              }`}
-            >
-              <Text className={`font-bold text-lg ${selectedPlan === 'monthly' ? 'text-accent' : 'text-white'}`}>
-                Monthly
-              </Text>
-              <Text className='text-white text-2xl font-bold mt-2'>{plans.monthly.price}</Text>
-              <Text className='text-light-300 text-xs mt-1'>per {plans.monthly.period}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setSelectedPlan('yearly')}
-              className={`flex-1 rounded-2xl p-4 border-2 relative ${
-                selectedPlan === 'yearly' ? 'border-accent bg-accent/10' : 'border-light-300/20 bg-dark-100'
-              }`}
-            >
-              {plans.yearly.savings && (
-                <View className='absolute -top-2 right-2 bg-accent rounded-full px-3 py-1'>
-                  <Text className='text-primary text-xs font-bold'>{plans.yearly.savings}</Text>
-                </View>
-              )}
-              <Text className={`font-bold text-lg ${selectedPlan === 'yearly' ? 'text-accent' : 'text-white'}`}>
-                Yearly
-              </Text>
-              <Text className='text-white text-2xl font-bold mt-2'>{plans.yearly.price}</Text>
-              <Text className='text-light-300 text-xs mt-1'>per {plans.yearly.period}</Text>
-            </TouchableOpacity>
+            <PlanCard type='monthly' />
+            <PlanCard type='yearly' />
           </View>
         </View>
 

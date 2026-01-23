@@ -1,5 +1,5 @@
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, ActivityIndicator } from 'react-native'
-import React, { useState, useMemo } from 'react'
+import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native'
+import React, { useCallback, useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
@@ -12,88 +12,91 @@ const Languages = () => {
   const [autoTranslate, setAutoTranslate] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  const languages = [
-    {
-      code: 'en',
-      name: 'English',
-      nativeName: 'English',
-      speakers: '1.5B+',
-      flag: '🇺🇸',
-      coverage: 100,
-    },
-    {
-      code: 'es',
-      name: 'Spanish',
-      nativeName: 'Español',
-      speakers: '500M+',
-      flag: '🇪🇸',
-      coverage: 98,
-    },
-    {
-      code: 'fr',
-      name: 'French',
-      nativeName: 'Français',
-      speakers: '280M+',
-      flag: '🇫🇷',
-      coverage: 95,
-    },
-    {
-      code: 'de',
-      name: 'German',
-      nativeName: 'Deutsch',
-      speakers: '130M+',
-      flag: '🇩🇪',
-      coverage: 92,
-    },
-    {
-      code: 'pt',
-      name: 'Portuguese',
-      nativeName: 'Português',
-      speakers: '250M+',
-      flag: '🇵🇹',
-      coverage: 88,
-    },
-    {
-      code: 'it',
-      name: 'Italian',
-      nativeName: 'Italiano',
-      speakers: '85M+',
-      flag: '🇮🇹',
-      coverage: 85,
-    },
-    {
-      code: 'ja',
-      name: 'Japanese',
-      nativeName: '日本語',
-      speakers: '125M+',
-      flag: '🇯🇵',
-      coverage: 90,
-    },
-    {
-      code: 'zh',
-      name: 'Chinese (Simplified)',
-      nativeName: '简体中文',
-      speakers: '1B+',
-      flag: '🇨🇳',
-      coverage: 93,
-    },
-    {
-      code: 'ko',
-      name: 'Korean',
-      nativeName: '한국어',
-      speakers: '80M+',
-      flag: '🇰🇷',
-      coverage: 87,
-    },
-    {
-      code: 'ru',
-      name: 'Russian',
-      nativeName: 'Русский',
-      speakers: '150M+',
-      flag: '🇷🇺',
-      coverage: 84,
-    },
-  ]
+  const languages = useMemo(
+    () => [
+      {
+        code: 'en',
+        name: 'English',
+        nativeName: 'English',
+        speakers: '1.5B+',
+        flag: '🇺🇸',
+        coverage: 100,
+      },
+      {
+        code: 'es',
+        name: 'Spanish',
+        nativeName: 'Español',
+        speakers: '500M+',
+        flag: '🇪🇸',
+        coverage: 98,
+      },
+      {
+        code: 'fr',
+        name: 'French',
+        nativeName: 'Français',
+        speakers: '280M+',
+        flag: '🇫🇷',
+        coverage: 95,
+      },
+      {
+        code: 'de',
+        name: 'German',
+        nativeName: 'Deutsch',
+        speakers: '130M+',
+        flag: '🇩🇪',
+        coverage: 92,
+      },
+      {
+        code: 'pt',
+        name: 'Portuguese',
+        nativeName: 'Português',
+        speakers: '250M+',
+        flag: '🇵🇹',
+        coverage: 88,
+      },
+      {
+        code: 'it',
+        name: 'Italian',
+        nativeName: 'Italiano',
+        speakers: '85M+',
+        flag: '🇮🇹',
+        coverage: 85,
+      },
+      {
+        code: 'ja',
+        name: 'Japanese',
+        nativeName: '日本語',
+        speakers: '125M+',
+        flag: '🇯🇵',
+        coverage: 90,
+      },
+      {
+        code: 'zh',
+        name: 'Chinese (Simplified)',
+        nativeName: '简体中文',
+        speakers: '1B+',
+        flag: '🇨🇳',
+        coverage: 93,
+      },
+      {
+        code: 'ko',
+        name: 'Korean',
+        nativeName: '한국어',
+        speakers: '80M+',
+        flag: '🇰🇷',
+        coverage: 87,
+      },
+      {
+        code: 'ru',
+        name: 'Russian',
+        nativeName: 'Русский',
+        speakers: '150M+',
+        flag: '🇷🇺',
+        coverage: 84,
+      },
+    ],
+    []
+  )
 
   const filteredLanguages = useMemo(() => {
     return languages.filter(
@@ -101,18 +104,58 @@ const Languages = () => {
         lang.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lang.nativeName.toLowerCase().includes(searchQuery.toLowerCase())
     )
-  }, [searchQuery])
+  }, [languages, searchQuery])
 
-  const handleLanguageChange = async (code: string) => {
-    setSaving(true)
-    setTimeout(() => {
-      setSaving(false)
-      setSelectedLanguage(code)
-      alert(`Language changed to ${languages.find((l) => l.code === code)?.name}`)
-    }, 1000)
-  }
+  const handleLanguageChange = useCallback(
+    (code: string) => {
+      setSaving(true)
+      setTimeout(() => {
+        setSaving(false)
+        setSelectedLanguage(code)
+        alert(`Language changed to ${languages.find((l) => l.code === code)?.name}`)
+      }, 800)
+    },
+    [languages]
+  )
 
-  const currentLanguage = languages.find((l) => l.code === selectedLanguage)
+  const currentLanguage = useMemo(
+    () => languages.find((l) => l.code === selectedLanguage),
+    [languages, selectedLanguage]
+  )
+
+  const LanguageToggleRow = ({
+    icon,
+    title,
+    description,
+    enabled,
+    onToggle,
+  }: {
+    icon: string
+    title: string
+    description: string
+    enabled: boolean
+    onToggle: () => void
+  }) => (
+    <View className='bg-dark-100 rounded-2xl p-4 mb-3 flex-row items-center justify-between'>
+      <View className='flex-row items-center flex-1'>
+        <MaterialCommunityIcons name={icon as any} size={20} color='#FF8C42' />
+        <View className='ml-4 flex-1'>
+          <Text className='text-white font-semibold'>{title}</Text>
+          <Text className='text-light-300 text-xs mt-1'>{description}</Text>
+        </View>
+      </View>
+      <TouchableOpacity onPress={onToggle}>
+        <View className={`rounded-full px-3 py-1 ${enabled ? 'bg-green-500/20' : 'bg-dark-200'}`}>
+          <Text className={`text-xs font-bold ${enabled ? 'text-green-400' : 'text-light-300'}`}>
+            {enabled ? 'On' : 'Off'}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+  )
+
+  const toggleSubtitles = useCallback(() => setSubtitlesEnabled((prev) => !prev), [])
+  const toggleAutoTranslate = useCallback(() => setAutoTranslate((prev) => !prev), [])
 
   return (
     <SafeAreaView className='bg-primary flex-1'>
@@ -149,39 +192,21 @@ const Languages = () => {
         <View className='px-4 mt-6'>
           <Text className='text-white text-lg font-bold mb-3'>Settings</Text>
 
-          <View className='bg-dark-100 rounded-2xl p-4 mb-3 flex-row items-center justify-between'>
-            <View className='flex-row items-center flex-1'>
-              <MaterialCommunityIcons name='subtitles' size={20} color='#FF8C42' />
-              <View className='ml-4 flex-1'>
-                <Text className='text-white font-semibold'>Subtitles</Text>
-                <Text className='text-light-300 text-xs mt-1'>Display subtitles in selected language</Text>
-              </View>
-            </View>
-            <TouchableOpacity onPress={() => setSubtitlesEnabled(!subtitlesEnabled)}>
-              <View className={`rounded-full px-3 py-1 ${subtitlesEnabled ? 'bg-green-500/20' : 'bg-dark-200'}`}>
-                <Text className={`text-xs font-bold ${subtitlesEnabled ? 'text-green-400' : 'text-light-300'}`}>
-                  {subtitlesEnabled ? 'On' : 'Off'}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
+          <LanguageToggleRow
+            icon='subtitles'
+            title='Subtitles'
+            description='Display subtitles in selected language'
+            enabled={subtitlesEnabled}
+            onToggle={toggleSubtitles}
+          />
 
-          <View className='bg-dark-100 rounded-2xl p-4 flex-row items-center justify-between'>
-            <View className='flex-row items-center flex-1'>
-              <MaterialCommunityIcons name='translate' size={20} color='#FF8C42' />
-              <View className='ml-4 flex-1'>
-                <Text className='text-white font-semibold'>Auto-Translate</Text>
-                <Text className='text-light-300 text-xs mt-1'>Translate community posts automatically</Text>
-              </View>
-            </View>
-            <TouchableOpacity onPress={() => setAutoTranslate(!autoTranslate)}>
-              <View className={`rounded-full px-3 py-1 ${autoTranslate ? 'bg-green-500/20' : 'bg-dark-200'}`}>
-                <Text className={`text-xs font-bold ${autoTranslate ? 'text-green-400' : 'text-light-300'}`}>
-                  {autoTranslate ? 'On' : 'Off'}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
+          <LanguageToggleRow
+            icon='translate'
+            title='Auto-Translate'
+            description='Translate community posts automatically'
+            enabled={autoTranslate}
+            onToggle={toggleAutoTranslate}
+          />
         </View>
 
         {/* Search Languages */}

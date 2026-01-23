@@ -43,14 +43,32 @@ const ButtonNav = ({
   onPress
 }: ButtonNavProps) => (
   <TouchableOpacity
-    className="flex flex-row items-center justify-between rounded-2xl bg-white/6 border border-white/10"
-    style={{ paddingVertical: 12, paddingHorizontal: 12, marginVertical: 4 }}
-    activeOpacity={0.85}
+    className="flex flex-row items-center justify-between rounded-2xl bg-white/5 border border-white/10"
+    style={{ 
+      paddingVertical: 14, 
+      paddingHorizontal: 14, 
+      marginVertical: 4,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 2,
+    }}
+    activeOpacity={0.7}
     onPress={isLocked ? undefined : onPress}
   >
     <View className="flex flex-row items-center gap-x-3">
-      <View className="p-2 rounded-xl bg-white/10">
-        <Icon name={name} size={20} color="white" />
+      <View 
+        className="p-2.5 rounded-xl bg-purple-500/20"
+        style={{
+          shadowColor: "#8b5cf6",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.3,
+          shadowRadius: 2,
+          elevation: 2,
+        }}
+      >
+        <Icon name={name} size={22} color="#8b5cf6" />
       </View>
       {isTheme ? (
         <Text className="text-white font-semibold text-base">
@@ -66,13 +84,13 @@ const ButtonNav = ({
         <Switch
           value={enabled}
           onValueChange={onToggle}
-          trackColor={{ false: "#4b5563", true: "#8b5cf6" }}
+          trackColor={{ false: "#374151", true: "#8b5cf6" }}
           thumbColor={enabled ? "#f9fafb" : "#d1d5db"}
         />
       ) : isLocked ? (
-        <Ionicons name="lock-closed" size={18} color="white" />
+        <Ionicons name="lock-closed" size={18} color="#9ca3af" />
       ) : (
-        <Ionicons name="chevron-forward" size={20} color="white" />
+        <Ionicons name="chevron-forward" size={22} color="#9ca3af" />
       )}
     </View>
   </TouchableOpacity>
@@ -87,8 +105,13 @@ const ActionContainer = ({
   return (
     <View className="flex flex-col gap-4">
       {/* Personal Info */}
-      <View className="bg-white/6 rounded-3xl p-4 border border-white/10">
-        <Text className="text-white mb-2 text-xl font-semibold">Personal</Text>
+      <View className="bg-white/5 rounded-3xl p-4 border border-white/10">
+        <View className="flex-row items-center mb-3">
+          <View className="bg-blue-500/20 rounded-full p-1.5 mr-2">
+            <MaterialCommunityIcons name="account-circle" size={20} color="#60a5fa" />
+          </View>
+          <Text className="text-white text-xl font-bold">Personal</Text>
+        </View>
 
         <ButtonNav
           Icon={MaterialCommunityIcons}
@@ -112,8 +135,13 @@ const ActionContainer = ({
       </View>
 
       {/* Profile */}
-      <View className="bg-white/6 rounded-3xl p-4 border border-white/10">
-        <Text className="text-white mb-2 text-xl font-semibold">Profile</Text>
+      <View className="bg-white/5 rounded-3xl p-4 border border-white/10">
+        <View className="flex-row items-center mb-3">
+          <View className="bg-green-500/20 rounded-full p-1.5 mr-2">
+            <MaterialCommunityIcons name="account-star" size={20} color="#22c55e" />
+          </View>
+          <Text className="text-white text-xl font-bold">Profile</Text>
+        </View>
 
         <ButtonNav
           Icon={AntDesign}
@@ -133,8 +161,13 @@ const ActionContainer = ({
       </View>
 
       {/* Security */}
-      <View className="bg-white/6 rounded-3xl p-4 border border-white/10">
-        <Text className="text-white mb-2 text-xl font-semibold">Security</Text>
+      <View className="bg-white/5 rounded-3xl p-4 border border-white/10">
+        <View className="flex-row items-center mb-3">
+          <View className="bg-orange-500/20 rounded-full p-1.5 mr-2">
+            <MaterialCommunityIcons name="shield-lock" size={20} color="#f97316" />
+          </View>
+          <Text className="text-white text-xl font-bold">Security</Text>
+        </View>
 
         <ButtonNav Icon={Feather} name="shield" text="Security" onPress={() => router.push("/settings/Security")} />
         <ButtonNav Icon={Entypo} name="language" text="Language" onPress={() => router.push("/settings/Languages")} />

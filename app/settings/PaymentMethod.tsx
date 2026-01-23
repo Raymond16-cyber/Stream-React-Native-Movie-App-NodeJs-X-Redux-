@@ -1,11 +1,40 @@
-import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
-import React, { useState } from 'react'
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Modal,
+  TextInput,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native'
+import React, { useCallback, useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { router } from 'expo-router'
 
 const PaymentMethod = () => {
+  type Card = {
+    id: string
+    type: string
+    lastFour: string
+    cardHolder: string
+    expiryDate: string
+    isDefault: boolean
+    icon: string
+  }
+
+  type Payment = {
+    id: string
+    type: string
+    amount: string
+    date: string
+    status: 'Success' | 'Failed'
+    icon: string
+  }
+
   const [selectedCard, setSelectedCard] = useState<string>('card1')
   const [addCardModal, setAddCardModal] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -16,7 +45,7 @@ const PaymentMethod = () => {
     cvv: '',
   })
 
-  const savedCards = [
+  const [savedCards, setSavedCards] = useState<Card[]>([
     {
       id: 'card1',
       type: 'Visa',
@@ -35,57 +64,91 @@ const PaymentMethod = () => {
       isDefault: false,
       icon: 'credit-card',
     },
-  ]
+  ])
 
-  const paymentHistory = [
-    {
-      id: '1',
-      type: 'Premium Upgrade',
-      amount: '+$99.99',
-      date: 'Jan 15, 2026',
-      status: 'Success',
-      icon: 'crown',
-    },
-    {
-      id: '2',
-      type: 'Monthly Subscription',
-      amount: '+$9.99',
-      date: 'Dec 15, 2025',
-      status: 'Success',
-      icon: 'repeat',
-    },
-    {
-      id: '3',
-      type: 'In-App Purchase',
-      amount: '+$4.99',
-      date: 'Dec 10, 2025',
-      status: 'Success',
-      icon: 'shopping',
-    },
-    {
-      id: '4',
-      type: 'Premium Upgrade',
-      amount: '+$99.99',
-      date: 'Nov 15, 2025',
-      status: 'Failed',
-      icon: 'crown',
-    },
-  ]
+  const paymentHistory: Payment[] = useMemo(
+    () => [
+      {
+        id: '1',
+        type: 'Premium Upgrade',
+        amount: '+$99.99',
+        date: 'Jan 15, 2026',
+        status: 'Success',
+        icon: 'crown',
+      },
+      {
+        id: '2',
+        type: 'Monthly Subscription',
+        amount: '+$9.99',
+        date: 'Dec 15, 2025',
+        status: 'Success',
+        icon: 'repeat',
+      },
+      {
+        id: '3',
+        type: 'In-App Purchase',
+        amount: '+$4.99',
+        date: 'Dec 10, 2025',
+        status: 'Success',
+        icon: 'shopping',
+      },
+      {
+        id: '4',
+        type: 'Premium Upgrade',
+        amount: '+$99.99',
+        date: 'Nov 15, 2025',
+        status: 'Failed',
+        icon: 'crown',
+      },
+    ],
+    []
+  )
 
-  const handleAddCard = async () => {
+  const handleAddCard = useCallback(() => {
     if (!cardData.cardNumber || !cardData.cardHolder || !cardData.expiryDate || !cardData.cvv) {
       alert('Please fill in all fields')
       return
     }
 
+    const digits = cardData.cardNumber.replace(/\D/g, '')
+    if (digits.length < 12) {
+      alert('Card number looks incomplete')
+      return
+    }
+
+    const newCard: Card = {
+      id: `card-${Date.now()}`,
+      type: 'Card',
+      lastFour: digits.slice(-4),
+      cardHolder: cardData.cardHolder,
+      expiryDate: cardData.expiryDate,
+      isDefault: savedCards.length === 0,
+      icon: 'credit-card',
+    }
+
     setLoading(true)
     setTimeout(() => {
+      setSavedCards((prev) => [...prev, newCard])
+      setSelectedCard(newCard.id)
       setLoading(false)
       setAddCardModal(false)
       setCardData({ cardNumber: '', cardHolder: '', expiryDate: '', cvv: '' })
       alert('Card added successfully!')
-    }, 1500)
-  }
+    }, 800)
+  }, [cardData, savedCards.length])
+
+  const handleMakeDefault = useCallback((cardId: string) => {
+    setSavedCards((prev) => prev.map((card) => ({ ...card, isDefault: card.id === cardId })))
+    setSelectedCard(cardId)
+  }, [])
+
+  const handleDeleteCard = useCallback((cardId: string) => {
+    setSavedCards((prev) => {
+      const next = prev.filter((card) => card.id !== cardId)
+      setSelectedCard((current) => (current === cardId ? next[0]?.id ?? '' : current))
+      return next
+    })
+  }, [])
 
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '')
@@ -126,7 +189,7 @@ const PaymentMethod = () => {
             </TouchableOpacity>
           </View>
 
-          {savedCards.map((card) => (
+          {savedCards.length ? savedCards.map((card) => (
             <TouchableOpacity
               key={card.id}
               onPress={() => setSelectedCard(card.id)}
@@ -164,16 +227,27 @@ const PaymentMethod = () => {
 
               {selectedCard === card.id && (
                 <View className='flex-row gap-2 mt-4 pt-4 border-t border-light-300/10'>
-                  <TouchableOpacity className='flex-1 bg-accent/20 rounded-full py-2 items-center'>
-                    <Text className='text-accent text-xs font-bold'>Edit</Text>
+                  <TouchableOpacity
+                    className='flex-1 bg-accent/20 rounded-full py-2 items-center'
+                    onPress={() => handleMakeDefault(card.id)}
+                  >
+                    <Text className='text-accent text-xs font-bold'>Set Default</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity className='flex-1 bg-red-500/20 rounded-full py-2 items-center'>
+                  <TouchableOpacity
+                    className='flex-1 bg-red-500/20 rounded-full py-2 items-center'
+                    onPress={() => handleDeleteCard(card.id)}
+                  >
                     <Text className='text-red-400 text-xs font-bold'>Delete</Text>
                   </TouchableOpacity>
                 </View>
               )}
             </TouchableOpacity>
-          ))}
+          )) : (
+            <View className='bg-dark-100 rounded-2xl p-6 items-center'>
+              <MaterialCommunityIcons name='credit-card-off' size={36} color='#9CA4AB' />
+              <Text className='text-light-300 mt-3 text-center'>No saved cards yet</Text>
+            </View>
+          )}
         </View>
 
         {/* Payment History */}

@@ -31,6 +31,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 
 
@@ -161,7 +162,6 @@ const dotStyle = useAnimatedStyle(() => ({
 
     const handleUserTyping = (userId: string) => {
       if (userId === user?._id) return;
-      console.log(userId, "is typing");
       setTypingUsers(prev => {
         const next = new Set(prev);
         next.add(userId);
@@ -193,8 +193,16 @@ const dotStyle = useAnimatedStyle(() => ({
 
   if (!currentCommunity) {
     return (
-      <View className="flex-1 items-center justify-center bg-primary">
-        <Text className="text-light-300">Community not found</Text>
+      <View className="flex-1 items-center justify-center bg-primary px-6">
+        <View className="bg-white/5 rounded-3xl p-8 items-center max-w-md">
+          <View className="bg-red-500/20 rounded-full p-5 mb-4">
+            <MaterialCommunityIcons name="alert-circle-outline" size={56} color="#ef4444" />
+          </View>
+          <Text className="text-white text-xl font-bold mb-2">Community Not Found</Text>
+          <Text className="text-gray-300 text-center text-sm">
+            This community doesn't exist or you don't have access
+          </Text>
+        </View>
       </View>
     );
   }
@@ -290,22 +298,29 @@ const dotStyle = useAnimatedStyle(() => ({
 
         <View
           className={`max-w-[75%] p-3 rounded-2xl ${
-            isMe ? "bg-accent/30" : "bg-light-300/10"
+            isMe ? "bg-purple-500/30" : "bg-white/10"
           }`}
+          style={{
+            shadowColor: isMe ? "#8b5cf6" : "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 3,
+            elevation: 2,
+          }}
         >
           {!isConsecutive && !isMe && item.senderName && (
-            <Text className="text-white font-semibold mb-1">
+            <Text className="text-purple-400 font-bold mb-1 text-xs">
               {item.senderName}
             </Text>
           )}
 
           {
-            item.content && <Text className="text-light-300">{item.content}</Text>
+            item.content && <Text className="text-white">{item.content}</Text>
           
           }
           
           {item.createdAt ? (
-            <Text className="text-xs text-light-300 mt-1 self-end">
+            <Text className="text-xs text-gray-400 mt-1 self-end">
               {new Date(item.createdAt).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -328,11 +343,11 @@ const dotStyle = useAnimatedStyle(() => ({
 
   return (
     <View className="px-4 py-2">
-      <View className="flex-row items-center">
-        <Animated.View style={dotStyle} className="w-2 h-2 bg-accent rounded-full mr-1" />
-        <Animated.View style={dotStyle} className="w-2 h-2 bg-accent rounded-full mr-1" />
-        <Animated.View style={dotStyle} className="w-2 h-2 bg-accent rounded-full mr-2" />
-        <Text className="text-light-300 text-xs italic">
+      <View className="flex-row items-center bg-white/5 rounded-2xl px-4 py-2 self-start">
+        <Animated.View style={dotStyle} className="w-2 h-2 bg-purple-500 rounded-full mr-1" />
+        <Animated.View style={dotStyle} className="w-2 h-2 bg-purple-500 rounded-full mr-1" />
+        <Animated.View style={dotStyle} className="w-2 h-2 bg-purple-500 rounded-full mr-2" />
+        <Text className="text-gray-300 text-xs italic">
           {count === 1 ? "Someone is typing…" : `${count} people are typing…`}
         </Text>
       </View>
@@ -344,23 +359,45 @@ const dotStyle = useAnimatedStyle(() => ({
   return (
     <SafeAreaView className="flex-1 bg-primary">
       {/* Chat Header */}
-      <View className="bg-primary border-b border-light-300/10 px-4 py-3 flex-row items-center" style={{minHeight: 60}}>
-      <TouchableOpacity onPress={() => router.back()} className="mr-3">
-          <Ionicons name="chevron-back" size={24} color="#ffffff" />
+      <View 
+        className="bg-white/5 border-b border-white/10 px-4 py-3 flex-row items-center" 
+        style={{
+          minHeight: 60,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
+        }}
+      >
+        <TouchableOpacity onPress={() => router.back()} className="mr-3">
+          <View className="bg-white/10 rounded-full p-2">
+            <Ionicons name="chevron-back" size={24} color="#ffffff" />
+          </View>
         </TouchableOpacity>
         <View className="flex-row items-center flex-1">
-          <Avatar uri={currentCommunity.image} size={40} style={{ marginRight: 12 }} />
+          <View 
+            style={{
+              shadowColor: "#8b5cf6",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 4,
+            }}
+          >
+            <Avatar uri={currentCommunity.image} size={40} style={{ marginRight: 12 }} />
+          </View>
           <View className="flex-1 mr-2">
-            <Text className="text-white text-lg font-semibold" numberOfLines={1}>
+            <Text className="text-white text-lg font-bold" numberOfLines={1}>
               {currentCommunity.name}
             </Text>
             <View className="flex-row items-center">
               <MaterialCommunityIcons
                 name="account-group"
                 size={14}
-                color="#9CA4AB"
+                color="#8b5cf6"
               />
-              <Text className="text-light-300 text-xs ml-1">
+              <Text className="text-gray-400 text-xs ml-1 font-medium">
                 {currentCommunity.memberCount} members
               </Text>
             </View>
@@ -368,7 +405,7 @@ const dotStyle = useAnimatedStyle(() => ({
         </View>
 
         <TouchableOpacity
-          className="ml-auto"
+          className="ml-auto bg-purple-500/20 rounded-full p-2.5"
           onPress={() =>
             router.push({
                pathname: "/community/add-member",
@@ -376,7 +413,7 @@ const dotStyle = useAnimatedStyle(() => ({
             })
           }
         >
-          <FontAwesome5 name="user-plus" size={20} color="white" />
+          <MaterialCommunityIcons name="account-plus" size={22} color="#8b5cf6" />
         </TouchableOpacity>
       </View>
 
@@ -388,19 +425,26 @@ const dotStyle = useAnimatedStyle(() => ({
         {/* Loading state */}
         {loadingCommunityMessages ? (
           <View className="flex-1 items-center justify-center">
-            <Text className="text-light-300">Loading messages...</Text>
+            <View className="bg-white/10 rounded-3xl p-8 items-center">
+              <ActivityIndicator size="large" color="#8b5cf6" />
+              <Text className="text-white text-base font-semibold mt-4">Loading messages...</Text>
+            </View>
           </View>
         ) : messages.length === 0 ? (
-          <View className="flex-1 items-center justify-center mt-20">
-            <MaterialCommunityIcons
-              name="chat-outline"
-              size={48}
-              color="#9CA4AB"
-            />
-            <Text className="text-light-300 mt-3">No messages yet</Text>
-            <Text className="text-light-400 text-xs mt-1">
-              Be the first to say something
-            </Text>
+          <View className="flex-1 items-center justify-center px-6">
+            <View className="bg-white/5 rounded-3xl p-8 items-center max-w-md">
+              <View className="bg-purple-500/20 rounded-full p-5 mb-4">
+                <MaterialCommunityIcons
+                  name="chat-outline"
+                  size={56}
+                  color="#8b5cf6"
+                />
+              </View>
+              <Text className="text-white text-xl font-bold mb-2">No Messages Yet</Text>
+              <Text className="text-gray-300 text-center text-sm">
+                Be the first to say something
+              </Text>
+            </View>
           </View>
         ) : (
           <FlatList
@@ -414,21 +458,39 @@ const dotStyle = useAnimatedStyle(() => ({
         )}
 
         {/* Message input */}
-        <View className="bg-primary p-3 flex-row items-center border-t border-light-300/10">
+        <View className="bg-white/5 p-3 flex-row items-center border-t border-white/10">
           <TextInput
             value={newMessage}
             onChangeText={onTypingMessage}
             placeholder="Type a message..."
-            placeholderTextColor="#9CA4AB"
-            className="flex-1 bg-light-300/10 rounded-full px-4 py-2 text-white"
-            
+            placeholderTextColor="#9ca3af"
+            className="flex-1 bg-white/10 rounded-full px-4 py-3 text-white"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.1,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
           />
           
           <TouchableOpacity
             onPress={sendMessage}
-            className="ml-3 bg-accent px-4 py-2 rounded-full"
+            className="ml-3 bg-purple-500 rounded-full p-3"
+            disabled={sending}
+            style={{
+              shadowColor: "#8b5cf6",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.4,
+              shadowRadius: 4,
+              elevation: 4,
+            }}
           >
-            {sending ? <ActivityIndicator color="#fff" /> : <Ionicons name='send' size={20} color='#000' />}
+            {sending ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <MaterialCommunityIcons name="send" size={20} color="#fff" />
+            )}
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

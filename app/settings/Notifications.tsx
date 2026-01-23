@@ -1,11 +1,20 @@
 import { View, Text, ScrollView, TouchableOpacity, Switch } from 'react-native'
-import React, { useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { router } from 'expo-router'
 
 const Notifications = () => {
+  type NotificationItem = {
+    id: string
+    type: 'message' | 'community' | 'system'
+    title: string
+    description: string
+    time: string
+    icon: string
+  }
+
   const [settings, setSettings] = useState({
     messageNotifications: true,
     communityUpdates: true,
@@ -17,94 +26,138 @@ const Notifications = () => {
     doNotDisturb: false,
   })
 
-  const toggleSetting = (key: keyof typeof settings) => {
+  const [recentNotifications, setRecentNotifications] = useState<NotificationItem[]>([{
+    id: '1',
+    type: 'message',
+    title: 'New message from Alex',
+    description: 'Hey, how are you doing?',
+    time: '5 min ago',
+    icon: 'message-text',
+  },
+  {
+    id: '2',
+    type: 'community',
+    title: 'New post in Movie Lovers',
+    description: 'Check out the latest discussion',
+    time: '1 hour ago',
+    icon: 'account-group',
+  },
+  {
+    id: '3',
+    type: 'system',
+    title: 'App update available',
+    description: 'Version 2.1.0 is now available',
+    time: '3 hours ago',
+    icon: 'bell-alert',
+  }])
+
+  const toggleSetting = useCallback((key: keyof typeof settings) => {
     setSettings((prev) => ({
       ...prev,
       [key]: !prev[key],
     }))
-  }
+  }, [])
 
-  const notificationCategories = [
-    {
-      id: 'messages',
-      label: 'Message Notifications',
-      description: 'Get notified when you receive new messages',
-      icon: 'message-text',
-      key: 'messageNotifications' as const,
-    },
-    {
-      id: 'communities',
-      label: 'Community Updates',
-      description: 'Get notified about community activities',
-      icon: 'account-group',
-      key: 'communityUpdates' as const,
-    },
-    {
-      id: 'friends',
-      label: 'Friend Requests',
-      description: 'Get notified about new friend requests',
-      icon: 'account-plus',
-      key: 'friendRequests' as const,
-    },
-    {
-      id: 'system',
-      label: 'System Alerts',
-      description: 'Important app updates and alerts',
-      icon: 'bell-alert',
-      key: 'systemAlerts' as const,
-    },
-  ]
+  const notificationCategories = useMemo(
+    () => [
+      {
+        id: 'messages',
+        label: 'Message Notifications',
+        description: 'Get notified when you receive new messages',
+        icon: 'message-text',
+        key: 'messageNotifications' as const,
+      },
+      {
+        id: 'communities',
+        label: 'Community Updates',
+        description: 'Get notified about community activities',
+        icon: 'account-group',
+        key: 'communityUpdates' as const,
+      },
+      {
+        id: 'friends',
+        label: 'Friend Requests',
+        description: 'Get notified about new friend requests',
+        icon: 'account-plus',
+        key: 'friendRequests' as const,
+      },
+      {
+        id: 'system',
+        label: 'System Alerts',
+        description: 'Important app updates and alerts',
+        icon: 'bell-alert',
+        key: 'systemAlerts' as const,
+      },
+    ],
+    []
+  )
 
-  const soundSettings = [
-    {
-      id: 'sound',
-      label: 'Sound',
-      description: 'Play sound on new notifications',
-      icon: 'volume-high',
-      key: 'soundEnabled' as const,
-    },
-    {
-      id: 'vibration',
-      label: 'Vibration',
-      description: 'Vibrate on new notifications',
-      icon: 'vibrate',
-      key: 'vibrationEnabled' as const,
-    },
-    {
-      id: 'dnd',
-      label: 'Do Not Disturb',
-      description: 'Silence all notifications until disabled',
-      icon: 'moon',
-      key: 'doNotDisturb' as const,
-    },
-  ]
+  const soundSettings = useMemo(
+    () => [
+      {
+        id: 'sound',
+        label: 'Sound',
+        description: 'Play sound on new notifications',
+        icon: 'volume-high',
+        key: 'soundEnabled' as const,
+      },
+      {
+        id: 'vibration',
+        label: 'Vibration',
+        description: 'Vibrate on new notifications',
+        icon: 'vibrate',
+        key: 'vibrationEnabled' as const,
+      },
+      {
+        id: 'dnd',
+        label: 'Do Not Disturb',
+        description: 'Silence all notifications until disabled',
+        icon: 'moon',
+        key: 'doNotDisturb' as const,
+      },
+    ],
+    []
+  )
 
-  const recentNotifications = [
-    {
-      id: '1',
-      type: 'message',
-      title: 'New message from Alex',
-      description: 'Hey, how are you doing?',
-      time: '5 min ago',
-      icon: 'message-text',
-    },
-    {
-      id: '2',
-      type: 'community',
-      title: 'New post in Movie Lovers',
-      description: 'Check out the latest discussion',
-      time: '1 hour ago',
-      icon: 'account-group',
-    },
-    {
-      id: '3',
-      type: 'system',
-      title: 'App update available',
-      description: 'Version 2.1.0 is now available',
-      time: '3 hours ago',
-      icon: 'bell-alert',
-    },
-  ]
+  const handleClearAll = useCallback(() => {
+    setRecentNotifications([])
+  }, [])
+
+  const handleDismiss = useCallback((id: string) => {
+    setRecentNotifications((prev) => prev.filter((notif) => notif.id !== id))
+  }, [])
+
+  const NotificationRow = ({
+    icon,
+    label,
+    description,
+    value,
+    onToggle,
+  }: {
+    icon: string
+    label: string
+    description: string
+    value: boolean
+    onToggle: () => void
+  }) => (
+    <View className='bg-dark-100 rounded-2xl p-4 mb-3 flex-row items-center justify-between'>
+      <View className='flex-row items-center flex-1 mr-3'>
+        <View className='bg-accent/20 rounded-full p-3 mr-4'>
+          <MaterialCommunityIcons name={icon as any} size={20} color='#FF8C42' />
+        </View>
+        <View className='flex-1'>
+          <Text className='text-white font-semibold'>{label}</Text>
+          <Text className='text-light-300 text-xs mt-1'>{description}</Text>
+        </View>
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onToggle}
+        trackColor={{ false: '#444', true: '#FF8C42' }}
+        thumbColor={value ? '#fff' : '#ccc'}
+      />
+    </View>
+  )
 
   return (
     <SafeAreaView className='bg-primary flex-1'>
@@ -121,26 +174,14 @@ const Notifications = () => {
         <View className='px-4 mt-4'>
           <Text className='text-white text-lg font-bold mb-3'>Notification Types</Text>
           {notificationCategories.map((category) => (
-            <View
+            <NotificationRow
               key={category.id}
-              className='bg-dark-100 rounded-2xl p-4 mb-3 flex-row items-center justify-between'
-            >
-              <View className='flex-row items-center flex-1 mr-3'>
-                <View className='bg-accent/20 rounded-full p-3 mr-4'>
-                  <MaterialCommunityIcons name={category.icon as any} size={20} color='#FF8C42' />
-                </View>
-                <View className='flex-1'>
-                  <Text className='text-white font-semibold'>{category.label}</Text>
-                  <Text className='text-light-300 text-xs mt-1'>{category.description}</Text>
-                </View>
-              </View>
-              <Switch
-                value={settings[category.key]}
-                onValueChange={() => toggleSetting(category.key)}
-                trackColor={{ false: '#444', true: '#FF8C42' }}
-                thumbColor={settings[category.key] ? '#fff' : '#ccc'}
-              />
-            </View>
+              icon={category.icon}
+              label={category.label}
+              description={category.description}
+              value={settings[category.key]}
+              onToggle={() => toggleSetting(category.key)}
+            />
           ))}
         </View>
 
@@ -148,26 +189,14 @@ const Notifications = () => {
         <View className='px-4 mt-6'>
           <Text className='text-white text-lg font-bold mb-3'>Sound & Haptics</Text>
           {soundSettings.map((setting) => (
-            <View
+            <NotificationRow
               key={setting.id}
-              className='bg-dark-100 rounded-2xl p-4 mb-3 flex-row items-center justify-between'
-            >
-              <View className='flex-row items-center flex-1 mr-3'>
-                <View className='bg-accent/20 rounded-full p-3 mr-4'>
-                  <MaterialCommunityIcons name={setting.icon as any} size={20} color='#FF8C42' />
-                </View>
-                <View className='flex-1'>
-                  <Text className='text-white font-semibold'>{setting.label}</Text>
-                  <Text className='text-light-300 text-xs mt-1'>{setting.description}</Text>
-                </View>
-              </View>
-              <Switch
-                value={settings[setting.key]}
-                onValueChange={() => toggleSetting(setting.key)}
-                trackColor={{ false: '#444', true: '#FF8C42' }}
-                thumbColor={settings[setting.key] ? '#fff' : '#ccc'}
-              />
-            </View>
+              icon={setting.icon}
+              label={setting.label}
+              description={setting.description}
+              value={settings[setting.key]}
+              onToggle={() => toggleSetting(setting.key)}
+            />
           ))}
         </View>
 
@@ -175,8 +204,12 @@ const Notifications = () => {
         <View className='px-4 mt-6 mb-6'>
           <View className='flex-row items-center justify-between mb-3'>
             <Text className='text-white text-lg font-bold'>Recent Notifications</Text>
-            <TouchableOpacity>
-              <Text className='text-accent text-xs font-semibold'>Clear All</Text>
+            <TouchableOpacity onPress={handleClearAll} disabled={!recentNotifications.length}>
+              <Text
+                className={`text-xs font-semibold ${recentNotifications.length ? 'text-accent' : 'text-light-400'}`}
+              >
+                Clear All
+              </Text>
             </TouchableOpacity>
           </View>
           {recentNotifications.length > 0 ? (
@@ -193,7 +226,7 @@ const Notifications = () => {
                   <Text className='text-light-300 text-xs mt-1'>{notif.description}</Text>
                   <Text className='text-light-400 text-xs mt-2'>{notif.time}</Text>
                 </View>
-                <TouchableOpacity className='ml-2'>
+                <TouchableOpacity className='ml-2' onPress={() => handleDismiss(notif.id)}>
                   <Ionicons name='close-circle' size={20} color='#9CA4AB' />
                 </TouchableOpacity>
               </View>
