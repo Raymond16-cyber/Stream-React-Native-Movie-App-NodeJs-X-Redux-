@@ -8,6 +8,7 @@ import { incrementCountOrSaveSearchAction } from "@/store/actions/movieActions";
 import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const search = () => {
   const dispatch = useAppDispatch();
@@ -67,11 +68,13 @@ const search = () => {
         contentContainerStyle={{ paddingBottom: 100 }}
         ListHeaderComponent={
           <>
-            <View className="w-full flex-row justify-center mt-20 items-center">
-              <Image source={icons.logo} className="w-14 h-12" />
+            <View className="w-full flex-row justify-center mt-20 mb-6 items-center">
+              <View className="bg-white/10 px-6 py-3 rounded-3xl backdrop-blur-lg">
+                <Image source={icons.logo} className="w-14 h-12" />
+              </View>
             </View>
 
-            <View className="my-5">
+            <View className="mb-5">
               <SearchBar
                 placeholder="Search movies..."
                 value={searchQuery}
@@ -82,22 +85,27 @@ const search = () => {
             {loading && (
               <ActivityIndicator
                 size="large"
-                color="#0000ff"
+                color="#8b5cf6"
                 className="my-3"
               />
             )}
 
             {error && (
-              <Text className="text-red-500 px-5 my-3">
-                Error: {error.message}
-              </Text>
+              <View className="bg-red-500/20 border border-red-400/40 rounded-2xl px-4 py-3 mx-5 my-3">
+                <Text className="text-red-100 text-sm font-medium">
+                  Error: {error.message}
+                </Text>
+              </View>
             )}
 
             {!loading && !error && searchQuery.trim() !== "" && (
-              <Text className="text-xl text-white font-bold">
-                Search results for{" "}
-                <Text className="text-accent">{searchQuery}</Text>
-              </Text>
+              <View className="bg-white/10 rounded-2xl px-4 py-3 mb-2 flex-row items-center">
+                <MaterialCommunityIcons name="magnify" size={20} color="#8b5cf6" />
+                <Text className="text-base text-white font-semibold ml-2">
+                  Results for{" "}
+                  <Text className="text-purple-400">"{searchQuery}"</Text>
+                </Text>
+              </View>
             )}
           </>
         }
@@ -105,22 +113,35 @@ const search = () => {
           !loading && !error ? (
             <View className="mt-10 px-5">
               {searchQuery.trim() && movies && movies.length === 0 ? (
-                <View className="flex-col items-center">
-                  <Text className="text-white text-center text-lg">
-                    {"Sorry, we couldn't find any results for " +
-                      `"${searchQuery}". Please try a different search term.`}
+                <View className="bg-white/5 rounded-3xl p-6 items-center">
+                  <View className="bg-red-500/20 rounded-full p-4 mb-4">
+                    <MaterialCommunityIcons name="file-search-outline" size={48} color="#ef4444" />
+                  </View>
+                  <Text className="text-white text-center text-lg font-semibold mb-2">
+                    No Results Found
+                  </Text>
+                  <Text className="text-gray-300 text-center text-sm">
+                    Sorry, we couldn't find any results for "{searchQuery}". Please try a different search term.
                   </Text>
 
                   <Image
                     source={images.notfoundAvatar}
-                    className=" w-60 h-60 mt-6 rounded-xl opacity-90"
+                    className="w-60 h-60 mt-6 rounded-xl opacity-90"
                     resizeMode="contain"
                   />
                 </View>
               ) : (
-                <Text className="text-white text-center text-lg">
-                  Start typing to search for movies.
-                </Text>
+                <View className="bg-white/5 rounded-3xl p-6 items-center">
+                  <View className="bg-purple-500/20 rounded-full p-4 mb-4">
+                    <MaterialCommunityIcons name="movie-search" size={48} color="#8b5cf6" />
+                  </View>
+                  <Text className="text-white text-center text-lg font-semibold mb-2">
+                    Search for Movies
+                  </Text>
+                  <Text className="text-gray-300 text-center text-sm">
+                    Start typing to discover amazing content
+                  </Text>
+                </View>
               )}
             </View>
           ) : null

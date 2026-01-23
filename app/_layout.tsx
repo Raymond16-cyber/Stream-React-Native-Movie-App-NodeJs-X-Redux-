@@ -31,12 +31,20 @@ function RootLayoutNav() {
   }, []);
 
   useEffect(() => {
-  if (!isReady || loading || !authChecked) return;
+  console.log("🔍 Auth Status:", { isReady, loading, authChecked, isAuthenticated });
+  
+  if (!isReady || loading || !authChecked) {
+    console.log("⏳ Waiting for auth check... isReady:", isReady, "loading:", loading, "authChecked:", authChecked);
+    return;
+  }
 
+  console.log("✅ Auth check complete. isAuthenticated:", isAuthenticated);
+  
   if (isAuthenticated) {
-    router.replace("/screens/Login");
+    console.log("📱 Navigating to home (tabs)");
     router.replace("/(tabs)");
   } else {
+    console.log("🔐 Navigating to login");
     router.replace("/screens/Login");
   }
 }, [isAuthenticated, loading, isReady, authChecked]);

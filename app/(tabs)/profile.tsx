@@ -13,8 +13,7 @@ import Feather from "@expo/vector-icons/Feather";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
 import { Link, router, useFocusEffect } from "expo-router";
-import { use, useEffect, useRef, useState } from "react";
-import { set } from "react-hook-form";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Image,
@@ -36,7 +35,7 @@ const Profile = () => {
   const { user, loading } = useAuth();
   const { request } = usePinSecurity();
 
-  const AVATAR_SIZE = 70;
+  const AVATAR_SIZE = 78;
 
   // animation for switch profile
   const slideAnim = useRef(new Animated.Value(-100)).current;
@@ -95,42 +94,36 @@ const Profile = () => {
     console.log(user.isMultiProfileEnabled);
   });
   return (
-    <SafeAreaView className="flex flex-col flex-1 bg-primary px-2">
+    <SafeAreaView className="flex-1 bg-primary">
       {/* Header */}
-      <View className="border-b border-light-300/10 flex flex-row items-center  px-3">
-      <View className="py-3 justify-center flex-1" style={{ paddingBottom: 10 }}>
-        <Text className="text-light-200 text-center" style={{ fontSize: 22 }}>
-          Account
-        </Text>
-      </View>
-
-<TouchableOpacity onPress={()=> router.push("/customer-services/customer-care")}>
-      <AntDesign name="customer-service" size={24} color="white" />
-      </TouchableOpacity>
+      <View className="px-4 pb-3 pt-4 flex-row items-center justify-between border-b border-light-300/10">
+        <View className="flex-1 items-center">
+          <Text className="text-light-200 text-lg font-semibold">Account</Text>
+          <Text className="text-light-300 text-xs">Manage your profile & security</Text>
+        </View>
+        <TouchableOpacity onPress={() => router.push("/customer-services/customer-care")}
+          className="p-2 rounded-full bg-white/10">
+          <AntDesign name="customer-service" size={22} color="white" />
+        </TouchableOpacity>
       </View>
 
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: 120,
-          paddingTop: 30,
+          paddingBottom: 140,
+          paddingTop: 26,
+          paddingHorizontal: 14,
+          gap: 18,
         }}
       >
-        <View
-          className="flex flex-col"
-          style={{ paddingHorizontal: 13, gap: 16 }}
-        >
-          {/* User Card */}
-          <UserInfoCardContainer loading={loading}>
-            <View
-              className="flex flex-row items-center bg-dark-100"
-              style={{
-                padding: 20,
-                position: "relative",
-                gap: 20,
-              }}
-            >
+        {/* User Card */}
+        <UserInfoCardContainer loading={loading}>
+          <View className="bg-dark-100 rounded-2xl p-5 relative overflow-hidden">
+            <View className="absolute -right-8 -top-8 w-36 h-36 bg-white/5 rounded-full" />
+            <View className="absolute right-2 top-4 w-20 h-20 bg-white/5 rounded-full" />
+
+            <View className="flex-row items-center gap-4">
               {user?.currentProfile?.image ? (
                 <View
                   style={{
@@ -138,6 +131,8 @@ const Profile = () => {
                     height: AVATAR_SIZE,
                     borderRadius: AVATAR_SIZE / 2,
                     overflow: "hidden",
+                    borderWidth: 2,
+                    borderColor: "#8b5cf6",
                   }}
                 >
                   <Image
@@ -146,82 +141,86 @@ const Profile = () => {
                         ? { uri: user?.currentProfile?.image }
                         : icons.person
                     }
-                    style={{
-                      width: AVATAR_SIZE,
-                      height: AVATAR_SIZE,
-                    }}
+                    style={{ width: AVATAR_SIZE, height: AVATAR_SIZE }}
                     resizeMode="cover"
                   />
                 </View>
               ) : (
-                <Image
-                  source={icons.person}
-                  style={{ width: 90, height: 90 }}
-                />
+                <Image source={icons.person} style={{ width: 90, height: 90 }} />
               )}
 
-              <View className="flex flex-col">
-                <Text className="text-white text-xl">
-                  {user?.currentProfile?.name || "Test Name"}
+              <View className="flex-1">
+                <Text className="text-white text-xl font-semibold">
+                  {user?.currentProfile?.name || "Your Name"}
                 </Text>
-                <Text className="text-light-200">
-                  {user?.email || "Test Email"}
+                <Text className="text-light-200 text-sm">
+                  {user?.email || "you@example.com"}
                 </Text>
+
+                <View className="flex-row gap-2 mt-2 flex-wrap">
+                  <View className="bg-white/10 px-3 py-1.5 rounded-full flex-row items-center gap-1">
+                    <MaterialCommunityIcons name="shield-check" size={16} color="#10b981" />
+                    <Text className="text-light-200 text-xs">Secure</Text>
+                  </View>
+                  {multiProfileEnabled ? (
+                    <View className="bg-indigo-500/20 px-3 py-1.5 rounded-full flex-row items-center gap-1">
+                      <MaterialCommunityIcons name="account-multiple" size={16} color="#a78bfa" />
+                      <Text className="text-indigo-100 text-xs">Multi profile</Text>
+                    </View>
+                  ) : null}
+                </View>
               </View>
+
+              <Pressable
+                className="p-2 bg-white/10 rounded-full"
+                onPress={() => router.push("/settings/CustomizeProfile")}
+              >
+                <Feather name="edit-3" size={20} color="white" />
+              </Pressable>
             </View>
 
             {/* Switch Profile */}
             {multiProfileEnabled ? (
               <Link href="/settings/CreateProfile" asChild>
-                <Pressable>
+                <Pressable className="mt-4">
                   <Animated.View
-                    className="flex flex-row items-center justify-center bg-dark-100 mt-4 py-2"
+                    className="flex-row items-center justify-center bg-white/10 py-3 rounded-xl"
                     style={{ transform: [{ translateX: slideAnim }] }}
                   >
-                    <AntDesign name="swap" size={20} color="white" />
-                    <Text className="text-white">Switch Profile</Text>
+                    <AntDesign name="swap" size={18} color="white" />
+                    <Text className="text-white ml-2 font-semibold">Switch Profile</Text>
                   </Animated.View>
                 </Pressable>
               </Link>
             ) : (
-              <View className="mt-4 py-4" />
+              <View className="mt-4" />
             )}
+          </View>
+        </UserInfoCardContainer>
 
-            {/* Edit Icon */}
-            <Pressable
-              className="absolute right-0 -top-3 bg-primary border-white p-1 border-2"
-              style={{ borderRadius: "50%" }}
-              onPress={() => router.push("/settings/CustomizeProfile")}
-            >
-              <Feather name="edit-3" size={24} color="white" />
-            </Pressable>
-          </UserInfoCardContainer>
+        {/* Actions */}
+        <ActionContainer
+          modeenabled={modeenabled}
+          setModeEnabled={setModeEnabled}
+          multiProfileEnabled={multiProfileEnabled}
+          setMultiProfileEnabled={setMultiProfileEnabled}
+          handleToggleMultiProfile={handleSwitchProfile}
+        />
 
-          {/* Actions */}
-          <ActionContainer
-            modeenabled={modeenabled}
-            setModeEnabled={setModeEnabled}
-            multiProfileEnabled={multiProfileEnabled}
-            setMultiProfileEnabled={setMultiProfileEnabled}
-            handleToggleMultiProfile={handleSwitchProfile}
-          />
-
-          {/* Close Account */}
+        {/* Danger Zone */}
+        <View className="gap-3">
           <TouchableOpacity
-            className="bg-dark-100 rounded-lg py-3.5 flex flex-row items-center justify-center z-50"
-            style={{ borderRadius: 16 }}
+            className="bg-red-500/15 rounded-2xl py-3.5 flex-row items-center justify-center"
             onPress={destroyAccount}
           >
-            <MaterialCommunityIcons name="cancel" size={22} color="white" />
-            <Text className="text-white font-semibold text-base ml-2">
+            <MaterialCommunityIcons name="cancel" size={22} color="#f87171" />
+            <Text className="text-red-100 font-semibold text-base ml-2">
               Close account
             </Text>
           </TouchableOpacity>
 
-          {/* Sign Out */}
           <TouchableOpacity
-            className="bg-dark-100 rounded-lg py-3.5 flex flex-row items-center justify-center z-50"
-            style={{ borderRadius: 16 }}
+            className="bg-white/10 rounded-2xl py-3.5 flex-row items-center justify-center"
             onPress={async () => {
               await dispatch(LogoutAction());
             }}

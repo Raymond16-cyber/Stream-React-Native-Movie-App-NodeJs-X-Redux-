@@ -232,15 +232,22 @@ export default function Index() {
         </BlurView>
 
         {/* filter movies by genres */}
-        <View className="flex-row items-center justify-end px-5 mt-4 gap-x-3">
+        <View className="flex-row items-center justify-end px-5 mt-4">
           <FlatList
             data={movieGenres}
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={{ marginRight: 10 }}
+                className="mr-2"
                 onPress={() => selectMovieGenre(item.name, item.id)}
+                activeOpacity={0.85}
               >
-                <Text className="text-white bg-gray-800 px-3 py-1 rounded-full">
+                <Text
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+                    selectedMovieId === item.id
+                      ? "bg-white text-primary"
+                      : "bg-white/10 text-white"
+                  }`}
+                >
                   {item.name}
                 </Text>
               </TouchableOpacity>
@@ -255,15 +262,17 @@ export default function Index() {
           {(moviesLoading || trendingLoading) && (
             <ActivityIndicator
               size="large"
-              color="#0000ff"
+              color="#8b5cf6"
               className="mt-10 self-center"
             />
           )}
 
           {(moviesError || trendingError) && (
-            <Text className="text-white mt-5 text-center">
-              Error: {moviesError?.message || trendingError}
-            </Text>
+            <View className="bg-red-500/20 border border-red-400/40 rounded-2xl px-4 py-3 mt-5">
+              <Text className="text-red-100 text-center text-sm">
+                {moviesError?.message || trendingError || "Something went wrong"}
+              </Text>
+            </View>
           )}
 
           {/* hero movie */}

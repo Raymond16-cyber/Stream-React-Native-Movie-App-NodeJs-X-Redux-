@@ -35,13 +35,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
  const restoreUserFromToken = async () => {
   try {
     const token = await AsyncStorage.getItem("authToken");
+    console.log("🔑 Token from AsyncStorage:", token ? "EXISTS" : "MISSING");
+    
     if (!token) {
-      return; // 🚫 No token → do nothing
+      // No token exists - mark auth as checked and user as not authenticated
+      console.log("❌ No token found, marking auth as checked");
+      dispatch({ type: "AUTH_CHECKED_WITHOUT_TOKEN" });
+      return;
     }
 
-    await dispatch(loadUserAction());
+    // Dispatch the thunk and wait for it to complete
+    console.log("🚀 Dispatching loadUserAction...");
+    await dispatch(loadUserAction() as any);
+    console.log("✅ loadUserAction completed");
   } catch (err) {
-    console.warn("Failed to restore user from token", err);
+    console.warn("⚠️ Failed to restore user from token", err);
+    // Mark auth as checked even on error
+    dispatch({ type: "AUTH_CHECKED_WITHOUT_TOKEN" });
   }
 };
 

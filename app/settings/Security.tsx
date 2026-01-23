@@ -42,7 +42,15 @@ const Security = () => {
     checkBiometrics()
   }, [])
 
-  const activeSessions = [
+  const activeSessions: Array<{
+    id: number
+    device: string
+    os: string
+    location: string
+    lastActive: string
+    current: boolean
+    icon: keyof typeof MaterialCommunityIcons.glyphMap
+  }> = [
     {
       id: 1,
       device: 'iPhone 15 Pro',

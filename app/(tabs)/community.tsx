@@ -181,30 +181,35 @@ const community = () => {
         <View className="px-4 mb-4">
           <View className="flex-row items-center justify-between mt-2">
             <View>
-              <Text className="text-white text-3xl font-bold">Communities</Text>
-              <Text className="text-light-200 text-sm mt-1">
+              <View className="flex-row items-center mb-2">
+                <View className="bg-purple-500/30 rounded-full p-2 mr-2">
+                  <MaterialCommunityIcons name="account-group" size={24} color="#8b5cf6" />
+                </View>
+                <Text className="text-white text-3xl font-bold">Communities</Text>
+              </View>
+              <Text className="text-gray-300 text-sm ml-1">
                 Connect with movie lovers
               </Text>
             </View>
             <TouchableOpacity
-              className="bg-accent rounded-full p-3"
+              className="bg-purple-500 rounded-full p-3 shadow-lg"
               onPress={() => setCreateModalVisible(true)}
             >
-              <Ionicons name="add" size={24} color="#ffffff" />
+              <Ionicons name="add" size={26} color="#ffffff" />
             </TouchableOpacity>
           </View>
 
           {/* Tabs */}
-          <View className="flex-row bg-dark-100 rounded-full p-1 mt-4">
+          <View className="flex-row bg-white/10 rounded-full p-1 mt-4">
             <TouchableOpacity
               className={`flex-1 py-3 rounded-full ${
-                activeTab === "my" ? "bg-accent" : ""
+                activeTab === "my" ? "bg-purple-500" : ""
               }`}
               onPress={() => setActiveTab("my")}
             >
               <Text
                 className={`text-center font-bold ${
-                  activeTab === "my" ? "text-white" : "text-light-300"
+                  activeTab === "my" ? "text-white" : "text-gray-300"
                 }`}
               >
                 My Communities
@@ -212,13 +217,13 @@ const community = () => {
             </TouchableOpacity>
             <TouchableOpacity
               className={`flex-1 py-3 rounded-full ${
-                activeTab === "discover" ? "bg-accent" : ""
+                activeTab === "discover" ? "bg-purple-500" : ""
               }`}
               onPress={() => setActiveTab("discover")}
             >
               <Text
                 className={`text-center font-bold ${
-                  activeTab === "discover" ? "text-white" : "text-light-300"
+                  activeTab === "discover" ? "text-white" : "text-gray-300"
                 }`}
               >
                 Discover
@@ -241,27 +246,34 @@ const community = () => {
                 ))
               ) : (
                 <View className="flex-1 justify-center items-center py-20">
-                  <MaterialCommunityIcons
-                    name="account-group-outline"
-                    size={80}
-                    color="#9CA4AB"
-                  />
-                  <Text className="text-light-200 text-lg mt-4 text-center">
-                    No Communities Yet
-                  </Text>
-                  <Text className="text-light-300 text-sm mt-2 text-center px-8">
-                    Join or create a community to start chatting with other
-                    movie lovers
-                  </Text>
+                  <View className="bg-white/5 rounded-3xl p-8 items-center max-w-md">
+                    <View className="bg-purple-500/20 rounded-full p-5 mb-4">
+                      <MaterialCommunityIcons
+                        name="account-group-outline"
+                        size={64}
+                        color="#8b5cf6"
+                      />
+                    </View>
+                    <Text className="text-white text-xl font-bold mb-2 text-center">
+                      No Communities Yet
+                    </Text>
+                    <Text className="text-gray-300 text-sm text-center px-4">
+                      Join or create a community to start chatting with other
+                      movie lovers
+                    </Text>
+                  </View>
                 </View>
               )}
             </>
           ) : (
             <>
               <View className="mb-4">
-                <Text className="text-white text-xl font-bold mb-3">
-                  Recommended for You
-                </Text>
+                <View className="bg-white/10 rounded-2xl px-4 py-3 flex-row items-center">
+                  <MaterialCommunityIcons name="compass" size={22} color="#8b5cf6" />
+                  <Text className="text-white text-lg font-bold ml-2">
+                    Recommended for You
+                  </Text>
+                </View>
               </View>
               {recommendedCommunities.map((community) => (
                 <CommunityCard key={community._id} community={community} />
@@ -284,13 +296,18 @@ const community = () => {
       keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
     >
       <View className="bg-secondary rounded-t-3xl max-h-[90%]">
-        <View className="flex-row items-center justify-between mb-6 px-6 pt-6">
-          <Text className="text-white text-2xl font-bold">
-            Create Community
-          </Text>
+        <View className="flex-row items-center justify-between mb-6 px-6 pt-6 border-b border-white/10 pb-4">
+          <View className="flex-row items-center">
+            <View className="bg-purple-500/30 rounded-full p-2 mr-3">
+              <MaterialCommunityIcons name="account-group" size={24} color="#8b5cf6" />
+            </View>
+            <Text className="text-white text-2xl font-bold">
+              Create Community
+            </Text>
+          </View>
           <TouchableOpacity
             onPress={() => setCreateModalVisible(false)}
-            className="bg-dark-100 rounded-full p-2"
+            className="bg-white/10 rounded-full p-2"
           >
             <Ionicons name="close" size={24} color="#ffffff" />
           </TouchableOpacity>
@@ -302,7 +319,7 @@ const community = () => {
           contentContainerStyle={{ paddingBottom: 40 }}
           keyboardShouldPersistTaps="handled"
         >
-                <Text className="text-light-200 text-sm mb-2">
+                <Text className="text-gray-200 text-sm mb-2 font-semibold">
                   Community Image
                 </Text>
 
@@ -332,10 +349,10 @@ const community = () => {
                     <View className="items-center">
                       <Ionicons
                         name="image-outline"
-                        size={40}
-                        color="#9CA4AB"
+                        size={48}
+                        color="#8b5cf6"
                       />
-                      <Text className="text-light-300 mt-2">Select Image</Text>
+                      <Text className="text-gray-300 mt-2 font-medium">Tap to Select Image</Text>
                     </View>
                   )}
                   <View
@@ -352,7 +369,7 @@ const community = () => {
                   />
                 </TouchableOpacity>
 
-                <Text className="text-light-200 text-sm mb-2">
+                <Text className="text-gray-200 text-sm mb-2 font-semibold">
                   Community Name
                 </Text>
                 <TextInput
@@ -365,7 +382,7 @@ const community = () => {
                   }
                 />
 
-                <Text className="text-light-200 text-sm mb-2">Description</Text>
+                <Text className="text-gray-200 text-sm mb-2 font-semibold">Description</Text>
                 <TextInput
                   className="bg-dark-100 text-white rounded-xl p-4 mb-4 h-24"
                   placeholder="Describe your community"
@@ -378,7 +395,7 @@ const community = () => {
                   }
                 />
 
-                <Text className="text-light-200 text-sm mb-2">Category</Text>
+                <Text className="text-gray-200 text-sm mb-2 font-semibold">Category</Text>
                 <View className="flex-row flex-wrap gap-2 mb-6">
                   {[
                     "General",
@@ -392,8 +409,8 @@ const community = () => {
                       key={category}
                       className={`px-4 py-2 rounded-full ${
                         newCommunity.category === category
-                          ? "bg-accent"
-                          : "bg-dark-100"
+                          ? "bg-purple-500"
+                          : "bg-white/10"
                       }`}
                       onPress={() =>
                         setNewCommunity({ ...newCommunity, category })
@@ -403,7 +420,7 @@ const community = () => {
                         className={`${
                           newCommunity.category === category
                             ? "text-white"
-                            : "text-light-300"
+                            : "text-gray-300"
                         } font-bold`}
                       >
                         {category}
@@ -413,8 +430,9 @@ const community = () => {
                 </View>
 
                 <TouchableOpacity
-                  className="bg-accent rounded-full py-4 mt-4"
+                  className="bg-purple-500 rounded-full py-4 mt-4"
                   onPress={handleCreateCommunity}
+                  disabled={isCreatingCommunity}
                 >
                   <Text className="text-white text-center font-bold text-base">
                     {

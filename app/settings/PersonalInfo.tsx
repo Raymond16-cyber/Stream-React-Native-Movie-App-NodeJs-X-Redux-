@@ -5,10 +5,11 @@ import Ionicons from '@expo/vector-icons/Ionicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { router } from 'expo-router'
 import { useAuth } from '@/Contexts/AuthContext'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const PersonalInfo = () => {
   const { user } = useAuth()
-
+  const startedAt = AsyncStorage.getItem("startedAt");
   const userInfo = [
     {
       label: 'Email',
@@ -17,7 +18,7 @@ const PersonalInfo = () => {
     },
     {
       label: 'Phone',
-      value: '+1 (555) 123-4567',
+      value: user?.phone || 'Not provided',
       icon: 'phone',
     },
     {
@@ -27,7 +28,7 @@ const PersonalInfo = () => {
     },
     {
       label: 'Member Since',
-      value: 'January 2024',
+      value: startedAt ? new Date(startedAt).toLocaleDateString() : 'N/A',
       icon: 'calendar',
     },
     {

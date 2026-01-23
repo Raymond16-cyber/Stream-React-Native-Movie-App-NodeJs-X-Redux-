@@ -1,6 +1,6 @@
 import { ThunkAction } from "redux-thunk";
 import axios, { AxiosError } from "axios";
-import { AUTH_DESTROY_ACCOUNT, AUTH_DESTROY_ACCOUNT_FAIL, AUTH_ERROR, LOAD_USER, LOAD_USER_FAIL, LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_FAIL, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS, SET_SECURITY_PIN, SET_SECURITY_PIN_FAIL } from "../types/type"
+import { AUTH_DESTROY_ACCOUNT, AUTH_DESTROY_ACCOUNT_FAIL, AUTH_ERROR, LOAD_USER, LOAD_USER_START, LOAD_USER_FAIL, LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_FAIL, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS, SET_SECURITY_PIN, SET_SECURITY_PIN_FAIL } from "../types/type"
 import { RootState } from "../store";
 import { AnyAction } from "redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -53,8 +53,10 @@ export const loginAction = (
       });
       AsyncStorage.setItem("authToken", response.data.token);
       const decodedToken = JSON.parse(atob(response.data.token.split(".")[1]));
-      console.log("Decoded Token:", decodedToken);
-
+      if(decodedToken.startedAt){
+        AsyncStorage.setItem("startedAt", decodedToken.startedAt);
+      }
+      
       dispatch({
         type: LOGIN_SUCCESS,
         payload: { 
@@ -156,9 +158,38 @@ export const destroyAccountAction = (): ThunkAction<Promise<void>, RootState, un
 export const loadUserAction = (): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
   return async (dispatch) => {
     try {
-      const response = await axios.get(`${baseURL}/api/auth/load-user`,{
-        withCredentials:true
+      // Dispatch loading state
+      dispatch({
+        type: LOAD_USER_START,
       });
+
+      // Get token from AsyncStorage
+      const token = await AsyncStorage.getItem("authToken");
+      
+      if (!token) {
+        console.warn("❌ No token available for load-user request");
+        dispatch({
+          type: LOAD_USER_FAIL,
+          payload: { 
+            error: "No authentication token" 
+          },
+        });
+        return;
+      }
+
+      // Set 10-second timeout to prevent indefinite waiting
+      const response = await Promise.race([
+        axios.get(`${baseURL}/api/auth/load-user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true 
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Request timeout')), 10000))
+      ]) as any;
+      
+      console.log("✅ Backend response:", response.data);
+      
       await AsyncStorage.setItem("authToken", response.data.token);
       dispatch({
         type: LOAD_USER,
@@ -170,7 +201,7 @@ export const loadUserAction = (): ThunkAction<Promise<void>, RootState, unknown,
         },
       });
     } catch (error) {
-      console.warn("Load user failed", error);
+      console.warn("❌ Load user failed", error);
       dispatch({
         type: LOAD_USER_FAIL,
         payload: { 

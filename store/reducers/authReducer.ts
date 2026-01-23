@@ -1,4 +1,4 @@
-import { AUTH_DESTROY_ACCOUNT, AUTH_DESTROY_ACCOUNT_FAIL, CLEAR_ERRORS, CLEAR_SUCCESS_MESSAGE, CREATE_PROFILE_FAIL, CREATE_PROFILE_SUCCESS, DELETE_PROFILE_FAIL, DELETE_PROFILE_SUCCESS,  EDIT_USER_SUCCESS,  LOAD_USER, LOAD_USER_FAIL, LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_FAIL, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS, SET_CURRENT_PROFILE_FAIL, SET_CURRENT_PROFILE_SUCCESS, SET_SECURITY_PIN, SET_SECURITY_PIN_FAIL, TOGGLE_MULTI_PROFILE, TOGGLE_MULTI_PROFILE_FAIL } from "../types/type";
+import { AUTH_DESTROY_ACCOUNT, AUTH_DESTROY_ACCOUNT_FAIL, AUTH_CHECKED_WITHOUT_TOKEN, CLEAR_ERRORS, CLEAR_SUCCESS_MESSAGE, CREATE_PROFILE_FAIL, CREATE_PROFILE_SUCCESS, DELETE_PROFILE_FAIL, DELETE_PROFILE_SUCCESS,  EDIT_USER_SUCCESS,  LOAD_USER, LOAD_USER_START, LOAD_USER_FAIL, LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_FAIL, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS, SET_CURRENT_PROFILE_FAIL, SET_CURRENT_PROFILE_SUCCESS, SET_SECURITY_PIN, SET_SECURITY_PIN_FAIL, TOGGLE_MULTI_PROFILE, TOGGLE_MULTI_PROFILE_FAIL } from "../types/type";
 
 type AuthState = {
   user: Record<string, any>;
@@ -66,9 +66,17 @@ export const authReducer = (
         ...state,
         error:payload.error
       }
-    case LOAD_USER:
+    case LOAD_USER_START:
       return {
         ...state,
+        loading: true,
+        error: "",
+      };
+    case LOAD_USER:
+      console.log("✅ LOAD_USER action - Setting user as authenticated:", payload.user);
+      return {
+        ...state,
+        loading: false,
         isAuthenticated: true,
         authChecked: true,
         user: {...payload.user,currentProfile: payload.currentProfile},
@@ -76,8 +84,16 @@ export const authReducer = (
     case LOAD_USER_FAIL:
       return{
         ...state,
+        loading: false,
         error:payload.error,
          authChecked: true, // ✅ still checked
+      }
+    case AUTH_CHECKED_WITHOUT_TOKEN:
+      return {
+        ...state,
+        loading: false,
+        authChecked: true,
+        isAuthenticated: false,
       }
     case AUTH_DESTROY_ACCOUNT:
       return {
