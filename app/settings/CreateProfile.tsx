@@ -18,6 +18,8 @@ import { CreateProfileModal } from "@/components/User/Settings/CreateProfileModa
 import { AntDesign } from "@expo/vector-icons";
 import useCreateProfileImage from "@/hooks/useCreateProfileImage";
 import { CLEAR_ERRORS, CLEAR_SUCCESS_MESSAGE } from "@/store/types/type";
+import { usePinSecurity } from "@/Contexts/PinSecurityContext";
+import { router } from "expo-router";
 
 const SIZE = 128;
 const MAX_PROFILES = 4;
@@ -206,6 +208,7 @@ const CreateProfile = () => {
 
   const dispatch = useAppDispatch();
   const { user } = useAuth();
+  const { request } = usePinSecurity();
   const { image, pickImage, setImage } = useCreateProfileImage();
   const { message, error } = useAppSelector((state) => state.auth);
 
@@ -278,6 +281,22 @@ const CreateProfile = () => {
       return;
     }
 
+    // Determine target profile and whether this is a kid->adult switch.
+    const targetProfile = user?.profiles.find((p: any) => p._id === showSwitch);
+    const fromIsKid = user?.currentProfile?.isKid ?? false;
+    const toIsKid = targetProfile?.isKid ?? false;
+
+    // If switching from a kids profile to an adult profile, require PIN first.
+    if (fromIsKid && !toIsKid) {
+      const allowed = await request();
+      if (!allowed) {
+        showToast("PIN required to switch out of kids profile");
+        return;
+      }
+      router.back();
+    }
+
+    // Proceed with switching
     await dispatch(switchProfileAction({ profileId: showSwitch }));
   };
 
