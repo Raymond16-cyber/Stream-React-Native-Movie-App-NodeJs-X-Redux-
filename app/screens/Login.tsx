@@ -262,33 +262,31 @@ const Login = () => {
             <View className="flex-1 h-px bg-gray-300" />
           </View>
 
-          {/* Links */}
-          {!isDisabled && (
-            <View className="gap-3">
-              <Pressable
-                onPress={() => router.push("/screens/Register")}
-                className="flex-row items-center justify-center py-3 rounded-2xl border-2 border-gray-300 bg-gray-50"
-              >
-                <MaterialCommunityIcons name="account-plus" size={20} color="#6366f1" />
-                <Text className="text-gray-800 font-semibold ml-2">Create New Account</Text>
-              </Pressable>
+          {/* Links (always visible so user can navigate away while submitting) */}
+          <View className="gap-3">
+            <Pressable
+              onPress={() => router.push("/screens/Register")}
+              className="flex-row items-center justify-center py-3 rounded-2xl border-2 border-gray-300 bg-gray-50"
+            >
+              <MaterialCommunityIcons name="account-plus" size={20} color="#6366f1" />
+              <Text className="text-gray-800 font-semibold ml-2">Create New Account</Text>
+            </Pressable>
 
-              <Pressable
-                onPress={() => router.push("/screens/ForgotPassword")}
-                className="py-3 items-center"
-              >
-                <Text className="text-indigo-600 font-semibold text-base underline">Forgot Password?</Text>
-              </Pressable>
+            <Pressable
+              onPress={() => router.push("/screens/ForgotPassword")}
+              className="py-3 items-center"
+            >
+              <Text className="text-indigo-600 font-semibold text-base underline">Forgot Password?</Text>
+            </Pressable>
 
-              <Pressable
-                onPress={() => router.push("/screens/Welcome")}
-                className="flex-row items-center justify-center py-3"
-              >
-                <MaterialCommunityIcons name="arrow-left" size={20} color="#9ca3af" />
-                <Text className="text-gray-600 ml-2 font-medium">Back to Welcome</Text>
-              </Pressable>
-            </View>
-          )}
+            <Pressable
+              onPress={() => router.push("/screens/Welcome")}
+              className="flex-row items-center justify-center py-3"
+            >
+              <MaterialCommunityIcons name="arrow-left" size={20} color="#9ca3af" />
+              <Text className="text-gray-600 ml-2 font-medium">Back to Welcome</Text>
+            </Pressable>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
