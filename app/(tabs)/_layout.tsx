@@ -1,6 +1,7 @@
 // this file removes the defualt header that hs the file's name on them
 
 import { icons } from "@/constants/icons";
+import { useAuth } from "@/Contexts/AuthContext";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Image, Text, View } from "react-native";
@@ -28,6 +29,7 @@ const TabIcon = ({ icon, name, focused }: Props) => {
 }; 
 
 const _layout = () => {
+  const { user } = useAuth();
   return (
     <Tabs
       screenOptions={{
@@ -81,16 +83,22 @@ const _layout = () => {
           ),
         }}
       />
-      <Tabs.Screen
-        name="community"
-        options={{
-          headerShown: false,
-          title: "Community",
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon={icons.community} name="Community" focused={focused} />
-          ),
-        }}
-      />
+      {
+        // Only show Community tab for logged-in users whose current profile is NOT a kid
+        user && user.currentProfile && !user.currentProfile.isKid && (
+          <Tabs.Screen
+            name="community"
+            options={{
+              headerShown: false,
+              title: "Community",
+              tabBarIcon: ({ focused }) => (
+                <TabIcon icon={icons.community} name="Community" focused={focused} />
+              ),
+            }}
+          />
+        )
+      }
+      
       <Tabs.Screen
         name="profile"
         options={{
