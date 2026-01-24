@@ -95,11 +95,13 @@ const Login = () => {
   /* -------------------- Error handling -------------------- */
   useEffect(() => {
     if (error) {
+      // stop loading and allow immediate retry
       setIsLoading(false);
+      setIsLocked(false);
 
+      // clear error message after a short delay (UI only)
       const timer = setTimeout(() => {
         dispatch({ type: CLEAR_ERRORS });
-        setIsLocked(false);
       }, 3000);
 
       return () => clearTimeout(timer);
