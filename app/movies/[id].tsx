@@ -55,13 +55,14 @@ export default function MovieDetails() {
   const isSaved = savedMovies.some(
     (m) => m?.movie_id === movie?.id
   );
-
-  const saveMovie = () => {
+  const isKidsMode = user?.currentProfile.isKid || false;
+  const saveMovie = (isKids?:boolean) => {
     if (!movie || !user || isSaved) return;
     dispatch(
       saveMovieAction({
         movie,
         userId: user.id || user._id,
+        isKids:isKidsMode || false
       })
     );
   };
@@ -102,7 +103,7 @@ export default function MovieDetails() {
 
             <Pressable
               className="bg-white/10 rounded-2xl px-4 py-3 flex-col items-center min-w-[70px]"
-              onPress={saveMovie}
+              onPress={() => saveMovie()}
               disabled={isSaved}
               style={{
                 shadowColor: isSaved ? "#22c55e" : "#8b5cf6",

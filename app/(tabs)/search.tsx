@@ -2,28 +2,35 @@ import MovieCard from "@/components/MovieCard";
 import SearchBar from "@/components/SearchBar";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
-import { fetchMovies } from "@/services/api";
+import { fetchKidsCartoons, fetchMovies } from "@/services/api";
 import { useFetch } from "@/services/useFetch";
 import { incrementCountOrSaveSearchAction } from "@/store/actions/movieActions";
 import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useAuth } from "@/Contexts/AuthContext";
 
 const search = () => {
   const dispatch = useAppDispatch();
   const [searchQuery, setSearchQuery] = useState("");
+  const { user } = useAuth();
+  const isKid = user?.currentProfile?.isKid || false;
 
   const {
-    data: movies,
-    loading,
-    error,
-    refetch,
-    reset,
-  } = useFetch(
-    () => fetchMovies({ query: searchQuery }),
-    false // ← don't fetch on mount
-  );
+      data: movies,
+      loading,
+      error,
+      refetch,
+      reset
+    } = useFetch(() =>
+      isKid
+        ? fetchKidsCartoons({query:searchQuery.trim()})
+        : fetchMovies({
+            query: searchQuery.trim(),
+           
+          }),false
+    );
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -35,13 +42,12 @@ const search = () => {
     }, 400);
 
     return () => clearTimeout(delayDebounce);
-  }, [searchQuery]);
+  }, [searchQuery, isKid]);
 
   const handleMoviePress = (movie: Movie) => {
     if (!searchQuery.trim()) return;
 
-    console.log("Tracking search for:", movie.title);
-    dispatch(incrementCountOrSaveSearchAction(searchQuery, movie));
+    dispatch(incrementCountOrSaveSearchAction(searchQuery, movie,isKid));
   };
 
   return (
@@ -78,7 +84,9 @@ const search = () => {
               <SearchBar
                 placeholder="Search movies..."
                 value={searchQuery}
-                onChangeText={setSearchQuery}
+                onChangeText={(text)=>{
+                  setSearchQuery(text);
+                }}
               />
             </View>
 

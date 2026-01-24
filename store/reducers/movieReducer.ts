@@ -1,4 +1,4 @@
-import { CLEAR_ERRORS, CLEAR_SUCCESS_MESSAGE, FETCH_SAVED_MOVIES, FETCH_SAVED_MOVIES_FAIL, FETCH_TRENDING_MOVIES, FETCH_TRENDING_MOVIES_FAIL, SAVE_MOVIE, SAVE_MOVIE_FAIL } from "../types/type";
+import { CLEAR_ERRORS, CLEAR_SUCCESS_MESSAGE, FETCH_SAVED_MOVIES, FETCH_SAVED_MOVIES_FAIL, FETCH_TRENDING_MOVIES, FETCH_TRENDING_MOVIES_FAIL, REMOVE_SAVED_MOVIE, REMOVE_SAVED_MOVIE_FAIL, SAVE_MOVIE, SAVE_MOVIE_FAIL } from "../types/type";
 
 type MovieState = {
   trendingMovies: [],
@@ -50,6 +50,21 @@ export const movieReducer = (
             savedStatus: false,
             error:payload.error
           }
+        case REMOVE_SAVED_MOVIE:
+          return{
+            ...state,
+            savedStatus: true,
+            message:payload.message,
+            savedMovies: state.savedMovies.filter(
+              (movie) => movie.movie_id !== payload.movieId
+            )
+        }
+        case REMOVE_SAVED_MOVIE_FAIL:
+          return{
+            ...state,
+            savedStatus: false,
+            error:payload.error
+        }
         case FETCH_SAVED_MOVIES:
           return{
             ...state,

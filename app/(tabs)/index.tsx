@@ -69,14 +69,11 @@ export default function Index() {
 
   const { user, loading } = useAuth();
   const router = useRouter();
-  const isKid = user?.currentProfile?.isKid;
+  const isKid = user?.currentProfile?.isKid || false;
 
   useFocusEffect(
     useCallback(() => {
-      if (!isKid) {
-        dispatch(getTrendingMoviesAction());
-      }
-      return;
+        dispatch(getTrendingMoviesAction(isKid));
     }, [isKid])
   );
   useEffect(() => {
@@ -94,9 +91,10 @@ export default function Index() {
     loading: moviesLoading,
     error: moviesError,
     refetch,
+    reset
   } = useFetch(() =>
     isKid
-      ? fetchKidsCartoons()
+      ? fetchKidsCartoons({})
       : fetchMovies({
           query: "",
           id: selectedMovieId ? selectedMovieId : undefined,
@@ -108,7 +106,7 @@ export default function Index() {
     loading: recommendationsLoading,
     error: recommendationsError,
     refetch: refetchRecommendations,
-  } = useFetch(() => fetchMovieRecommendations());
+  } = useFetch(() => fetchMovieRecommendations(isKid));
 
   useEffect(() => {
     const pickRandomMovie = () => {
@@ -140,6 +138,14 @@ export default function Index() {
     refetch();
   }, [user.currentProfile?.isKid]);
 
+  // refetch recommendations when switching profiles (kid <-> adult)
+  useEffect(() => {
+    // clear current hero while fetching new recommendations
+    setRandomRecommendedMovie(null);
+    // refetch recommendations for new profile
+    refetchRecommendations();
+  }, [user.currentProfile?.isKid]);
+
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-primary">
@@ -158,7 +164,7 @@ export default function Index() {
       await refetch(); // Refetch movies
       await refetchRecommendations(); // Refetch recommendations
       if (!isKid) {
-        dispatch(getTrendingMoviesAction()); // Refetch trending if adult profile
+        dispatch(getTrendingMoviesAction(isKid)); // Refetch trending if adult profile
       }
     } catch (error) {
       console.log("Refresh error:", error);
@@ -180,21 +186,7 @@ export default function Index() {
   return (
     <View className="flex-1 bg-primary">
       <Image source={images.bg} className="absolute w-full h-full z-0" />
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        stickyHeaderIndices={[0]}
-        contentContainerStyle={{ minHeight: "100%", paddingBottom: 10 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor="#030014" // spinner color
-            colors={["#030014"]} // Android
-          />
-        }
-      >
-        {/* Header */}
+       {/* Header */}
         <BlurView
           intensity={70}
           tint="dark"
@@ -230,6 +222,22 @@ export default function Index() {
             </TouchableOpacity>
           </View>
         </BlurView>
+        
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        stickyHeaderIndices={[0]}
+        contentContainerStyle={{ minHeight: "100%", paddingBottom: 10 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#030014" // spinner color
+            colors={["#030014"]} // Android
+          />
+        }
+      >
+       
 
         {/* filter movies by genres */}
         <View className="flex-row items-center justify-end px-5 mt-4">

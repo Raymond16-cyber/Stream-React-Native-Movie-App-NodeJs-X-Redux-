@@ -1,7 +1,7 @@
 import UserListCard from "@/components/UserListCard";
 import { useAuth } from "@/Contexts/AuthContext";
 import { useFetch } from "@/services/useFetch";
-import { getSavedMoviesAction } from "@/store/actions/movieActions";
+import { getSavedMoviesAction, removeSavedMovieAction } from "@/store/actions/movieActions";
 import { useAppDispatch, useAppSelector } from "@/store/hooks/useAppDispatch";
 import { RootState } from "@/store/store";
 import { CLEAR_ERRORS } from "@/store/types/type";
@@ -17,7 +17,6 @@ const saved = () => {
   const { loading, error, savedMovies } = useAppSelector(
     (state: RootState) => state.movies
   );
-
   useFocusEffect(
     useCallback(() => {
       dispatch(getSavedMoviesAction());
@@ -64,16 +63,24 @@ const saved = () => {
         )}
 
         <FlatList
-          data={savedMovies}
-          renderItem={({ item }) => (
-            <UserListCard 
-              item={item} 
-              onRemove={(movieId: number) => {
-                // TODO: Implement remove from saved movies
-              }}
-            />
-          )}
-          keyExtractor={(item) => item.movie_id.toString()}
+          data={savedMovies ?? []}
+          renderItem={({ item }) => {
+            if (!item) return null;
+            return (
+              <UserListCard
+                item={item}
+                onRemove={async (movieId?: number) => {
+                  if (!movieId) return;
+                  await dispatch(removeSavedMovieAction(movieId));
+                }}
+              />
+            );
+          }}
+          keyExtractor={(item, index) =>
+            item && (item as any).movie_id
+              ? String((item as any).movie_id)
+              : String(index)
+          }
         />
 
         {!loading && !error && savedMovies?.length === 0 && (

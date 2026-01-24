@@ -53,16 +53,14 @@ export const fetchMovies = async ({
 
   const data = await response.json();
   const movies = data.results.slice(0, 18);
-  console.log("Fetched movies:", movies.length);
   return  movies;
 
  
 };
 
-export const fetchMovieRecommendations = async () => {
-
+export const fetchMovieRecommendations = async (isKid?:boolean) => {
   let endpoint = "";
-    endpoint = `${TMDB_CONFIG.BASE_URL}/movie/upcoming`;
+    endpoint = `${TMDB_CONFIG.BASE_URL}/discover/movie?sort_by=popularity.desc` + (isKid ? `&certification_country=US&certification.lte=G&with_genres=16&`  : "");
   
 
   const response = await fetch(endpoint, {
@@ -78,21 +76,32 @@ export const fetchMovieRecommendations = async () => {
     );
   }
   const data = await response.json();
-  const movies = data.results.slice(0, 18);
-  console.log("Fetched recommendations:", movies.length);
-  return  movies;
+  const random18movies = data.results
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 18);
+  return  random18movies;
 
  
 };
 
 
-export const fetchKidsCartoons = async () => {
+export const fetchKidsCartoons = async ({ query }: { query?: string }) => {
+  let endpoint = "";
 
-  const endpoint = `${TMDB_CONFIG.BASE_URL}/discover/movie?` +
-    `certification_country=US&` +
-    `certification.lte=G&` +
-    `with_genres=16&` + // 🎨 Animation
-    `sort_by=popularity.desc`;
+  const baseFilters =
+    "certification_country=US&certification.lte=G&with_genres=16";
+
+  if (query && query.trim().length > 0) {
+    // TMDB's `search/movie` doesn't reliably accept discover-style filters like
+    // `with_genres` or `certification.*`. For a filtered search we call the
+    // search endpoint and then filter the results client-side by `adult` and
+    // `genre_ids` (Animation genre id 16).
+    endpoint = `${TMDB_CONFIG.BASE_URL}/search/movie?query=${encodeURIComponent(
+      query
+    )}`;
+  } else {
+    endpoint = `${TMDB_CONFIG.BASE_URL}/discover/movie?${baseFilters}`;
+  }
 
   const response = await fetch(endpoint, {
     method: "GET",
@@ -107,6 +116,17 @@ export const fetchKidsCartoons = async () => {
   }
 
   const data = await response.json();
+  // If we used the search endpoint, filter results to ensure they are kids
+  // cartoons (non-adult and include Animation genre id 16). Discover already
+  // applied the correct filters server-side so we can return results directly.
+  if (query && query.trim().length > 0) {
+    const filtered = (data.results || []).filter((r: any) => {
+      const isAdult = Boolean(r.adult);
+      const hasAnimationGenre = Array.isArray(r.genre_ids) && r.genre_ids.includes(16);
+      return !isAdult && hasAnimationGenre;
+    });
+    return filtered;
+  }
 
   return data.results;
 };
@@ -125,7 +145,6 @@ export const fetchmovieDetails = async (movie_id: string):Promise<MovieDetails> 
       );
     }
     const data = await response.json();
-    console.log("Movie genre clicked:", data.genres[1].name);
     return data;
   } catch (error) {
     console.log("Error fetching movie details:", error);
@@ -135,7 +154,6 @@ export const fetchmovieDetails = async (movie_id: string):Promise<MovieDetails> 
 }
 
 export const fetchMovieTrailer = async (movieId: string) => {
-  console.log("TMDB API KEY",TMDB_CONFIG.API_KEY);
   const response = await fetch(
     `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${TMDB_CONFIG.API_KEY}`,
   );

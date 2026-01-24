@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Link } from "expo-router";
-import React from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect } from "react";
+import { Image, Text, TouchableOpacity, View, LayoutAnimation, Platform, UIManager } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
 type listProps = {
@@ -13,7 +13,14 @@ type listProps = {
 const UserListCard = ({ item, onPress, onRemove }: listProps) => {
   const { movie_id, movie_title, genres, poster_path } = item;
 
+  useEffect(() => {
+    if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
+
   const handleRemove = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     onRemove?.(movie_id);
   };
 
