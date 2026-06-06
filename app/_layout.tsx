@@ -8,7 +8,6 @@ import { store } from "@/store/store";
 import "../global.css";
 import { PinSecurityProvider } from "@/Contexts/PinSecurityContext";
 import * as Linking from "expo-linking";
-import { io } from "socket.io-client";
 
 function RootLayoutNav() {
   const { user, restoreUserFromToken, loading, isAuthenticated,authChecked } = useAuth();

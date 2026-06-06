@@ -92,10 +92,6 @@ export const fetchKidsCartoons = async ({ query }: { query?: string }) => {
     "certification_country=US&certification.lte=G&with_genres=16";
 
   if (query && query.trim().length > 0) {
-    // TMDB's `search/movie` doesn't reliably accept discover-style filters like
-    // `with_genres` or `certification.*`. For a filtered search we call the
-    // search endpoint and then filter the results client-side by `adult` and
-    // `genre_ids` (Animation genre id 16).
     endpoint = `${TMDB_CONFIG.BASE_URL}/search/movie?query=${encodeURIComponent(
       query
     )}`;
@@ -116,9 +112,6 @@ export const fetchKidsCartoons = async ({ query }: { query?: string }) => {
   }
 
   const data = await response.json();
-  // If we used the search endpoint, filter results to ensure they are kids
-  // cartoons (non-adult and include Animation genre id 16). Discover already
-  // applied the correct filters server-side so we can return results directly.
   if (query && query.trim().length > 0) {
     const filtered = (data.results || []).filter((r: any) => {
       const isAdult = Boolean(r.adult);
@@ -145,7 +138,7 @@ export const fetchmovieDetails = async (movie_id: string):Promise<MovieDetails> 
       );
     }
     const data = await response.json();
-    return data;
+    return data as MovieDetails;
   } catch (error) {
     console.log("Error fetching movie details:", error);
     throw error;

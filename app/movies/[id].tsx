@@ -162,6 +162,15 @@ export default function MovieDetails() {
             </View>
 
             {movie?.id && (
+              isKidsMode ?  
+              <View className="bg-purple-500 px-5 py-2.5 rounded-2xl flex-row items-center shadow-lg">
+                  <MaterialCommunityIcons name="play-circle" size={20} color="white" />
+                  <Text className="text-white text-sm font-bold ml-2">
+                    Play Trailer
+                  </Text>
+                  <MaterialCommunityIcons name="lock-outline" size={16} color="white" className="ml-1" />
+              </View>
+               :
               <Link href={`/movies/${movie.id}/trailer`} asChild>
                 <TouchableOpacity className="bg-purple-500 px-5 py-2.5 rounded-2xl flex-row items-center shadow-lg">
                   <MaterialCommunityIcons name="play-circle" size={20} color="white" />

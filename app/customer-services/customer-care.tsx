@@ -1,15 +1,23 @@
 import { View, Text, ScrollView, TouchableOpacity, Linking, Modal, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import { useAppDispatch } from '@/store/hooks/useAppDispatch'
+import { sendCustomerCareMessageAction } from '@/store/actions/customerCare.action'
+import { set } from 'react-hook-form'
 
 const CustomerCare = () => {
+  const [message,setMessage] = useState("")
+  const [sendingMessage,setSendingMessage] =  useState(false)
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null)
   const [chatModal, setChatModal] = useState(false)
   const [feedbackModal, setFeedbackModal] = useState(false)
   const [feedbackText, setFeedbackText] = useState("")
   const [loading, setLoading] = useState(false)
+
+  // redux dispatch
+  const dispatch = useAppDispatch();
 
   const faqs = [
     {
@@ -74,10 +82,13 @@ const CustomerCare = () => {
     }, 1500)
   }
 
-  const handleSendMessage = () => {
-    // Placeholder for sending message logic
-    alert('Message sent!')
+  const handleSendMessage = async() => {
+    setSendingMessage(true)
+    await dispatch(sendCustomerCareMessageAction(message))
+    setMessage("")
+    setSendingMessage(false)
   }
+ 
   return (
     <SafeAreaView className='bg-primary flex-1'>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -178,12 +189,17 @@ const CustomerCare = () => {
           </ScrollView>
             <View className='bg-primary border-t border-light-300/10 p-4 flex-row items-center gap-2'>
               <TextInput
+                value={message}
+                onChangeText={setMessage}
                 placeholder='Type your message...'
                 placeholderTextColor='#9CA4AB'
                 className='flex-1 bg-dark-100 text-white rounded-full px-4 py-3'
               />
               <TouchableOpacity className='bg-accent rounded-full p-3' onPress={handleSendMessage}>
-                <Ionicons name='send' size={20} color='#000' />
+                {
+                  sendingMessage ? <ActivityIndicator color='#000' /> : <Ionicons name='send' size={20} color='#000' />
+                }
+              
               </TouchableOpacity>
             </View>
           </KeyboardAvoidingView>

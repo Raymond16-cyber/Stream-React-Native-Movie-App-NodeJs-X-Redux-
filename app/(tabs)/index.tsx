@@ -197,9 +197,6 @@ export default function Index() {
             <Text className="text-white text-2xl font-bold">Stream</Text>
           </View>
           <View className="flex-row items-center gap-x-4">
-            <TouchableOpacity onPress={() => router.push("/search")}>
-              <Image source={icons.search} className="w-14 h-10" />
-            </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push("/profile")}
               className="rounded-full border-2 border-white overflow-hidden"
@@ -222,7 +219,7 @@ export default function Index() {
             </TouchableOpacity>
           </View>
         </BlurView>
-        
+
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -253,7 +250,7 @@ export default function Index() {
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
                     selectedMovieId === item.id
                       ? "bg-white text-primary"
-                      : "bg-white/10 text-white"
+                      : "bg-black text-white"
                   }`}
                 >
                   {item.name}

@@ -17,6 +17,8 @@ import {
   View,
   Animated,
   ActivityIndicator,
+  Alert,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -56,7 +58,12 @@ const CustomizeProfilePage = () => {
     if (message) {
       setImage(null);
       setIsSaving("saved");
-      ToastAndroid.show(message, ToastAndroid.SHORT);
+      if (Platform.OS === "android") {
+            
+        ToastAndroid.show(message, ToastAndroid.SHORT);
+          } else {
+            Alert.alert("", message);
+          }
       setTimeout(() => {
         dispatch({ type: CLEAR_SUCCESS_MESSAGE });
         setIsSaving("null");
@@ -64,7 +71,11 @@ const CustomizeProfilePage = () => {
     }
     if (error) {
       setIsSaving("error");
-      ToastAndroid.show(error, ToastAndroid.SHORT);
+      if (Platform.OS === "android") {
+        ToastAndroid.show(error, ToastAndroid.SHORT);
+      } else {
+        Alert.alert("", error);
+      }
       setTimeout(() => {
         dispatch({ type: CLEAR_ERRORS });
         setIsSaving("null");
