@@ -5,7 +5,7 @@ import { RootState } from "../store";
 import { AnyAction } from "redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const baseURL = "https://stream-server-4tle.onrender.com";
+export const baseURL = "https://main-stream-server.onrender.com";
 
 type regData = {
       email: string,
