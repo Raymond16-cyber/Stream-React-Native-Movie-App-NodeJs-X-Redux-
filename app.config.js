@@ -12,10 +12,14 @@ export default {
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     ios: {
+       bundleIdentifier: "com.stream.app",
       supportsTablet: true,
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false
+      }
     },
     android: {
-       "package": "com.anonymous.stream",
+      package: "com.stream.app",
       adaptiveIcon: {
         backgroundColor: "#E6F4FE",
         foregroundImage: "./assets/images/logo.png",
@@ -49,6 +53,9 @@ export default {
       reactCompiler: true,
     },
     extra: {
+      eas: {
+        projectId: "4cc40249-6959-4c99-a3a8-ef516b3dc0f1",
+      },
       movieToken: process.env.MOVIE_TOKEN,
       appwriteProjectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID,
       appwriteProjectName: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_NAME,

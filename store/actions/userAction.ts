@@ -2,7 +2,7 @@ import axios from "axios";
 import { ThunkAction } from "redux-thunk";
 import { RootState } from "../store";
 import { AnyAction } from "redux";
-import { baseURL } from "./authAction";
+import { baseURL, getAuthConfig } from "./authAction";
 import { CREATE_PROFILE_FAIL, CREATE_PROFILE_SUCCESS, DELETE_PROFILE_FAIL, DELETE_PROFILE_SUCCESS, EDIT_USER_FAIL, EDIT_USER_SUCCESS, SET_CURRENT_PROFILE_FAIL, SET_CURRENT_PROFILE_SUCCESS, TOGGLE_MULTI_PROFILE } from "../types/type";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -21,18 +21,10 @@ export const editUserDetailsAction = (
 ): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
   return async (dispatch) => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
-
       const response = await axios.post(
         `${baseURL}/api/me/edit-user-details`,
         data,
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        await getAuthConfig({ "Content-Type": "multipart/form-data" })
       );
 
       // ✅ store new token
@@ -70,9 +62,9 @@ export const toggleMultiProfileAction = (): ThunkAction<Promise<void>, RootState
   return async (dispatch) => {
     try {
       const response = await axios.put(
-        `${baseURL}/api/me/toggle-multi-profile`,{
-          withCredentials:true
-        }
+        `${baseURL}/api/me/toggle-multi-profile`,
+        {},
+        await getAuthConfig()
       );
       await AsyncStorage.setItem("authToken", response.data.token);
       dispatch({
@@ -94,17 +86,10 @@ export const createProfileAction = (
 ): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
   return async (dispatch) => {
     try {
-        const token = await AsyncStorage.getItem("authToken");
       const response = await axios.post(
   `${baseURL}/api/me/create-profile`,
   profileData,
-  {
-    withCredentials: true,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "multipart/form-data",
-    },
-  }
+  await getAuthConfig({ "Content-Type": "multipart/form-data" })
 );
 
 
@@ -147,9 +132,8 @@ export const deleteProfileAction = (
   return async (dispatch) => {
     try {
       const response = await axios.delete(
-        `${baseURL}/api/me/delete-profile/${profileId}`,{
-          withCredentials:true
-        }
+        `${baseURL}/api/me/delete-profile/${profileId}`,
+        await getAuthConfig()
       );
       await AsyncStorage.setItem("authToken", response.data.token);
       dispatch({
@@ -181,8 +165,9 @@ export const deleteProfileAction = (
     return async (dispatch) => {
       try {
         const response = await axios.put(
-          `${baseURL}/api/me/switch-profile`,{profileId},{
-            withCredentials:true}
+          `${baseURL}/api/me/switch-profile`,
+          { profileId },
+          await getAuthConfig()
         );
         await AsyncStorage.setItem("authToken", response.data.token);
         dispatch({

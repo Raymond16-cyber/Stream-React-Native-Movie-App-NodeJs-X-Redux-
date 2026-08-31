@@ -5,7 +5,24 @@ import { RootState } from "../store";
 import { AnyAction } from "redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const baseURL = "https://main-stream-server.onrender.com";
+export const baseURL = "https://stream-server-1-sfov.onrender.com";
+// export const baseURL = "http://172.20.10.2:4000";
+
+export const getAuthConfig = async (headers: Record<string, string> = {}) => {
+  const token = await AsyncStorage.getItem("authToken");
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  return {
+    withCredentials: true,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...headers,
+    },
+  };
+};
 
 type regData = {
       email: string,
@@ -51,10 +68,10 @@ export const loginAction = (
       const response = await axios.post(`${baseURL}/api/auth/login`, data,{
         withCredentials: true,
       });
-      AsyncStorage.setItem("authToken", response.data.token);
+      await AsyncStorage.setItem("authToken", response.data.token);
       const decodedToken = JSON.parse(atob(response.data.token.split(".")[1]));
       if(decodedToken.startedAt){
-        AsyncStorage.setItem("startedAt", decodedToken.startedAt);
+        await AsyncStorage.setItem("startedAt", decodedToken.startedAt);
       }
       
       dispatch({
@@ -121,13 +138,8 @@ export const authForgetPasswordAction = (
 export const destroyAccountAction = (): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
   return async (dispatch) => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
-      if (!token) throw new Error("No auth token found");
       const response = await axios.delete(`${baseURL}/api/auth/destroy-account`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
+        ...(await getAuthConfig()),
       });
       await AsyncStorage.removeItem("authToken");
       dispatch({
@@ -163,10 +175,10 @@ export const loadUserAction = (): ThunkAction<Promise<void>, RootState, unknown,
         type: LOAD_USER_START,
       });
 
-      // Get token from AsyncStorage
-      const token = await AsyncStorage.getItem("authToken");
-      
-      if (!token) {
+      let authConfig;
+      try {
+        authConfig = await getAuthConfig();
+      } catch {
         console.warn("❌ No token available for load-user request");
         dispatch({
           type: LOAD_USER_FAIL,
@@ -179,12 +191,7 @@ export const loadUserAction = (): ThunkAction<Promise<void>, RootState, unknown,
 
       // Set 10-second timeout to prevent indefinite waiting
       const response = await Promise.race([
-        axios.get(`${baseURL}/api/auth/load-user`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true 
-        }),
+        axios.get(`${baseURL}/api/auth/load-user`, authConfig),
         new Promise((_, reject) => setTimeout(() => reject(new Error('Request timeout')), 10000))
       ]) as any;
       
@@ -217,9 +224,11 @@ export const createSecurityPinAction = (
 ): ThunkAction<Promise<void>, RootState, unknown, AnyAction> => {
   return async (dispatch) => {
     try {
-      const response = await axios.post(`${baseURL}/api/auth/create-security-pin`, { securityPin:pin },{
-        withCredentials: true,
-      });
+      const response = await axios.post(
+        `${baseURL}/api/auth/create-security-pin`,
+        { securityPin: pin },
+        await getAuthConfig()
+      );
       await AsyncStorage.setItem("authToken", response.data.token);
       dispatch({
         type: SET_SECURITY_PIN,

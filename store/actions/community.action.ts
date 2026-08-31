@@ -1,7 +1,7 @@
 import { ThunkAction } from "redux-thunk";
 import { RootState } from "../store";
 import { AnyAction } from "redux";
-import { baseURL } from "./authAction";
+import { baseURL, getAuthConfig } from "./authAction";
 import axios from "axios";
 import { CREATE_COMMUNITY_FAIL, CREATE_COMMUNITY_SUCCESS, FETCH_COMMUNITY_MESSAGES_FAIL, FETCH_COMMUNITY_MESSAGES_SUCCESS, FETCH_LAST_COMMUNITY_MESSAGE_FAIL, FETCH_LAST_COMMUNITY_MESSAGE_SUCCESS, FETCH_MY_COMMUNITIES_FAIL, FETCH_MY_COMMUNITIES_SUCCESS, READ_COMMUNITY_MESSAGES_FAIL, READ_COMMUNITY_MESSAGES_SUCCESS, SEND_COMMUNITY_MESSAGE_FAIL, SEND_COMMUNITY_MESSAGE_SUCCESS } from "../types/type";
 
@@ -15,12 +15,7 @@ export const createCommunityAction = (
       const response = await axios.post(
     `${baseURL}/api/community/create`,
     formData,
-    {
-      withCredentials: true,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
+    await getAuthConfig({ "Content-Type": "multipart/form-data" })
   );
   dispatch({
     type: CREATE_COMMUNITY_SUCCESS,
@@ -49,7 +44,7 @@ export const createCommunityAction = (
     return async (dispatch) => {
         try {
         const response = await axios.get(`${baseURL}/api/community/my-communities`, {
-          withCredentials: true,
+          ...(await getAuthConfig())
         });
         dispatch({
           type: FETCH_MY_COMMUNITIES_SUCCESS,
@@ -72,7 +67,7 @@ export const createCommunityAction = (
       return async (dispatch) => {
           try {
           const response = await axios.get(`${baseURL}/api/community/get-last-message/${communityId}`, {
-            withCredentials: true,
+            ...(await getAuthConfig())
           });
           dispatch({
             type: FETCH_LAST_COMMUNITY_MESSAGE_SUCCESS,
@@ -106,9 +101,7 @@ export const readCommunityMessagesAction = (
       const response = await axios.post(
         `${baseURL}/api/community/read-messages`,
         { communityId, userId },
-        {
-          withCredentials: true,
-        }
+        await getAuthConfig()
       );
       dispatch({
         type: READ_COMMUNITY_MESSAGES_SUCCESS,
@@ -142,9 +135,7 @@ export const sendCommunityMessageAction = (
       const response = await axios.post(
         `${baseURL}/api/community/send-message`,
         { message },
-        {
-          withCredentials: true,
-        }
+        await getAuthConfig()
       );
 
       const savedMessage = response.data.messageDetails;
@@ -180,7 +171,7 @@ export const fetchCommunityMessagesAction = (
   return async (dispatch)=>{
     try{
       const response = await axios.get(`${baseURL}/api/community/get-messages/${communityId}`,{
-        withCredentials:true,
+        ...(await getAuthConfig()),
       }
       )
       dispatch({

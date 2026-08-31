@@ -1,7 +1,7 @@
 import { ThunkAction } from "redux-thunk";
 import { RootState } from "../store";
 import { AnyAction } from "redux";
-import { baseURL } from "./authAction";
+import { baseURL, getAuthConfig } from "./authAction";
 import axios from "axios";
 import { CLEAR_ERRORS, CLEAR_SUCCESS_MESSAGE, FETCH_SAVED_MOVIES, FETCH_SAVED_MOVIES_FAIL, FETCH_TRENDING_MOVIES, FETCH_TRENDING_MOVIES_FAIL, REMOVE_SAVED_MOVIE, REMOVE_SAVED_MOVIE_FAIL, SAVE_MOVIE, SAVE_MOVIE_FAIL } from "../types/type";
 
@@ -15,7 +15,7 @@ query: string, movie: Movie,isKid:boolean
   return async (dispatch) => {
     try {
       const response = await axios.post(`${baseURL}/api/v1/increment-search-count`, {query,movie,isKid},{
-        withCredentials:true
+        ...(await getAuthConfig())
       });
 
     } catch (error) {
@@ -37,7 +37,7 @@ export const removeSavedMovieAction = (
   return async (dispatch) => {
     try {
       const response = await axios.delete(`${baseURL}/api/v1/remove-saved-movie/${movieId}`,{
-        withCredentials:true
+        ...(await getAuthConfig())
       });
       dispatch({
         type: REMOVE_SAVED_MOVIE,
@@ -70,7 +70,7 @@ export const getTrendingMoviesAction = (isKid: boolean): ThunkAction<Promise<voi
   return async (dispatch) => {
     try {
       const response = await axios.get(`${baseURL}/api/v1/get-trending-movies/${isKid}`,{
-        withCredentials:true
+        ...(await getAuthConfig())
       });
       dispatch({
         type: FETCH_TRENDING_MOVIES,
@@ -102,7 +102,7 @@ export const saveMovieAction = ({movie,userId,isKids}:{movie:MovieDetails,userId
 return async (dispatch) => {
   try {
     const response = await axios.post(`${baseURL}/api/v1/save-movie`, {movie,userId,isKids},{
-      withCredentials:true
+      ...(await getAuthConfig())
     });
     dispatch({
       type: SAVE_MOVIE,
@@ -140,7 +140,7 @@ export const getSavedMoviesAction = (): ThunkAction<Promise<void>, RootState, un
   return async (dispatch) => {
     try {
       const response = await axios.get(`${baseURL}/api/v1/get-saved-movies`,{
-        withCredentials:true
+        ...(await getAuthConfig())
       });
       dispatch({
         type:FETCH_SAVED_MOVIES,

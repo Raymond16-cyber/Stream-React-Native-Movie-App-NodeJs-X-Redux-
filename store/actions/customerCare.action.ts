@@ -1,5 +1,5 @@
 import { ThunkAction } from "redux-thunk";
-import { baseURL } from "./authAction";
+import { baseURL, getAuthConfig } from "./authAction";
 import { RootState } from "../store";
 import { AnyAction } from "redux";
 import axios from "axios";
@@ -14,7 +14,7 @@ export const sendCustomerCareMessageAction = (
     return async (dispatch) => {
         try {
             const response = await axios.post(`${baseURL}/api/customer-care/send-message`, { message },{
-                withCredentials: true,
+                ...(await getAuthConfig())
             });
             // You can dispatch success action here if needed
         }catch(error){}
