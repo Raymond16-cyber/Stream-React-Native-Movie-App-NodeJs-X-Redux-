@@ -11,13 +11,15 @@ export default {
     deepLinks: true,
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
+
     ios: {
-       bundleIdentifier: "com.stream.app",
+      bundleIdentifier: "com.stream.app",
       supportsTablet: true,
       infoPlist: {
-        ITSAppUsesNonExemptEncryption: false
-      }
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
+
     android: {
       package: "com.stream.app",
       adaptiveIcon: {
@@ -29,10 +31,12 @@ export default {
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
     },
+
     web: {
       output: "static",
       favicon: "./assets/images/logo.png",
     },
+
     plugins: [
       "expo-router",
       [
@@ -48,14 +52,17 @@ export default {
         },
       ],
     ],
+
     experiments: {
       typedRoutes: true,
       reactCompiler: true,
     },
+
     extra: {
       eas: {
         projectId: "4cc40249-6959-4c99-a3a8-ef516b3dc0f1",
       },
+
       movieToken: process.env.MOVIE_TOKEN,
       appwriteProjectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID,
       appwriteProjectName: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_NAME,
